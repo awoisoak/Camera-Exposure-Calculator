@@ -11,6 +11,7 @@ import com.awoisoak.exposure.R;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+//TODO the random problems with the values might come for not using Big Decimals...should we try to use float instead of Double?
 //TODO apply blue instead pink
 //TODO create a "class converter" to apply a custom value (like 2.8) to a specific porcentage
 // (like 10% of the seekbar)
@@ -117,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
         calculateEV();
         calculateEVWithISO();
+        calculateNDShutterSpeed();
     }
 
 
@@ -142,10 +144,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             return;
         }
         Double N = Double.parseDouble((String) tvAperture.getText());
-        Double t = Double.parseDouble(((String) tvSpeed.getText()).split("s")[0]);
+        Double t = parseSpeed();
         Double EV = Math.log(N * N / t) / Math.log(2);
         Log.d(TAG, "EV = " + EV);
     }
+
+
 
     /**
      * https://photo.stackexchange.com/questions/32359/why-does-ev-increase-as-iso-increases
@@ -153,7 +157,44 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * EV = log₂(N²) + log₂(1/t) - log₂(100/S)
      * EV = aperture + shutter - ISO
      */
-    private void calculateEVWithISO() {
+    private Double calculateEVWithISO() {
+        /**
+         * Seems like the Seekbars are triggering the events right away they are created.
+         * We need to wait for the rest of seekbars to bee created too
+         */
+        if (tvSpeed.getText().equals("TextView") || tvISO.getText().equals("TextView")
+                || tvISOND.getText().equals("TextView")) {
+            Log.e(TAG, "tvSpeed text is TextView...");
+            return -1.0;
+        }
+        Double N = Double.parseDouble((String) tvAperture.getText());
+        Double t = parseSpeed();
+        Double ISO = Double.parseDouble(((String) tvISO.getText()));
+//        Double ISO_ND = Double.parseDouble(((String) tvISOND.getText()));
+        Double EV = (Math.log(N * N) / Math.log(2)) +
+                (Math.log(1 / t) / Math.log(2)) -
+                (Math.log(100 / ISO) / Math.log(2));
+        Log.d(TAG, "EV WITH ISO= " + EV);
+        return EV;
+
+    }
+
+    /**
+     * https://photo.stackexchange.com/questions/32359/why-does-ev-increase-as-iso-increases
+     *
+     * EV = log₂(N²) + log₂(1/t) - log₂(100/S)
+     * EV = aperture + shutter - ISO
+     *
+     * where:
+     * - N is the relative aperture (f-number)
+     * - t is the exposure time ("shutter speed") in seconds[2]
+     * - 100 is the default ISO
+     * - S is the new ISO
+     *
+     * Isolating t:
+     * t = 1/(2^EV + log₂(100/S) - log₂(N²))
+     */
+    private void calculateNDShutterSpeed() {
         /**
          * Seems like the Seekbars are triggering the events right away they are created.
          * We need to wait for the rest of seekbars to bee created too
@@ -163,15 +204,32 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             Log.e(TAG, "tvSpeed text is TextView...");
             return;
         }
-        Double N = Double.parseDouble((String) tvAperture.getText());
-        Double t = Double.parseDouble(((String) tvSpeed.getText()).split("s")[0]);
-        Double ISO = Double.parseDouble(((String) tvISO.getText()));
+        Double apertureND = Double.parseDouble((String) tvApertureND.getText());
+//        Double t = Double.parseDouble(((String) tvSpeed.getText()).split("s")[0]);
+//        Double ISO = Double.parseDouble(((String) tvISO.getText()));
         Double ISO_ND = Double.parseDouble(((String) tvISOND.getText()));
-        Double EV = (Math.log(N * N) / Math.log(2)) +
-                (Math.log(1 / t) / Math.log(2)) -
-                (Math.log(ISO / ISO_ND) / Math.log(2));
-        Log.d(TAG, "EV WITH ISO= " + EV);
+        Double EV = calculateEVWithISO();
 
+        Double shutterSpeed = 1 / (Math.pow(2, EV) +
+                (Math.log(100 / ISO_ND) / Math.log(2)) -
+                (Math.log(apertureND * apertureND) / Math.log(2)));
+
+
+        Log.d(TAG, "New Shutter speed is= " + shutterSpeed);
+
+    }
+
+    /**
+     * Convert the speed values into 'real' Double numbers
+     * @return
+     */
+    private Double parseSpeed() {
+        String tmp = ((String) tvSpeed.getText()).split("s")[0];
+        if (tmp.contains("1/")) {
+            tmp = tmp.split("1/")[1];
+            return 1 / Double.parseDouble(tmp);
+        }
+        return Double.parseDouble(tmp);
     }
 
 
