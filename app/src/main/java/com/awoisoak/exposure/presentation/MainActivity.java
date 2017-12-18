@@ -22,23 +22,35 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    @BindView(R.id.tv_aperture) TextView tvAperture;
-    @BindView(R.id.seekBar_aperture) SeekBar seekBarAperture;
+    @BindView(R.id.tv_aperture)
+    TextView tvAperture;
+    @BindView(R.id.seekBar_aperture)
+    SeekBar seekBarAperture;
 
-    @BindView(R.id.tv_speed) TextView tvSpeed;
-    @BindView(R.id.seekBar_shutter) SeekBar seekBarSpeed;
+    @BindView(R.id.tv_speed)
+    TextView tvSpeed;
+    @BindView(R.id.seekBar_shutter)
+    SeekBar seekBarSpeed;
 
-    @BindView(R.id.tv_iso) TextView tvISO;
-    @BindView(R.id.seekBar_iso) SeekBar seekBarISO;
+    @BindView(R.id.tv_iso)
+    TextView tvISO;
+    @BindView(R.id.seekBar_iso)
+    SeekBar seekBarISO;
 
-    @BindView(R.id.tv_nd_aperture) TextView tvApertureND;
-    @BindView(R.id.seekBar_nd_aperture) SeekBar seekBarApertureND;
+    @BindView(R.id.tv_nd_aperture)
+    TextView tvApertureND;
+    @BindView(R.id.seekBar_nd_aperture)
+    SeekBar seekBarApertureND;
 
-    @BindView(R.id.tv_nd_iso) TextView tvISOND;
-    @BindView(R.id.seekBar_nd_iso) SeekBar seekBarISOND;
+    @BindView(R.id.tv_nd_iso)
+    TextView tvISOND;
+    @BindView(R.id.seekBar_nd_iso)
+    SeekBar seekBarISOND;
 
-    @BindView(R.id.tv_nd_stops) TextView tvStopsND;
-    @BindView(R.id.seekBar_nd_stops) SeekBar seekBarStopsND;
+    @BindView(R.id.tv_nd_stops)
+    TextView tvStopsND;
+    @BindView(R.id.seekBar_nd_stops)
+    SeekBar seekBarStopsND;
 
     String[] apertureValues;
     String[] speedValues;
@@ -81,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
 
-        switch(seekBar.getId()){
+        switch (seekBar.getId()) {
             case R.id.seekBar_aperture:
                 tvAperture.setText(apertureValues[i]);
                 break;
@@ -101,9 +113,67 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 tvStopsND.setText(StopsValues[i]);
                 break;
             default:
-                Log.e(TAG,"onProgressChanged | Seekbar not found");
+                Log.e(TAG, "onProgressChanged | Seekbar not found");
         }
+        calculateEV();
+        calculateEVWithISO();
     }
+
+
+    /**
+     * https://en.wikipedia.org/wiki/Exposure_value
+     * Exposure value is a base-2 logarithmic scale defined by:
+     *
+     * EV = log₂ (N^2 / t)
+     *
+     * where:
+     * - N is the relative aperture (f-number)
+     * - t is the exposure time ("shutter speed") in seconds[2]
+     *
+     * Aperture f-1 AND shutter 1s gives you EV = 0.0
+     */
+    private void calculateEV() {
+        /**
+         * Seems like the Seekbars are triggering the events right away they are created.
+         * We need to wait for the rest of seekbars to bee created too
+         */
+        if (tvSpeed.getText().equals("TextView")) {
+            Log.e(TAG, "tvSpeed text is TextView...");
+            return;
+        }
+        Double N = Double.parseDouble((String) tvAperture.getText());
+        Double t = Double.parseDouble(((String) tvSpeed.getText()).split("s")[0]);
+        Double EV = Math.log(N * N / t) / Math.log(2);
+        Log.d(TAG, "EV = " + EV);
+    }
+
+    /**
+     * https://photo.stackexchange.com/questions/32359/why-does-ev-increase-as-iso-increases
+     *
+     * EV = log₂(N²) + log₂(1/t) - log₂(100/S)
+     * EV = aperture + shutter - ISO
+     */
+    private void calculateEVWithISO() {
+        /**
+         * Seems like the Seekbars are triggering the events right away they are created.
+         * We need to wait for the rest of seekbars to bee created too
+         */
+        if (tvSpeed.getText().equals("TextView") || tvISO.getText().equals("TextView")
+                || tvISOND.getText().equals("TextView")) {
+            Log.e(TAG, "tvSpeed text is TextView...");
+            return;
+        }
+        Double N = Double.parseDouble((String) tvAperture.getText());
+        Double t = Double.parseDouble(((String) tvSpeed.getText()).split("s")[0]);
+        Double ISO = Double.parseDouble(((String) tvISO.getText()));
+        Double ISO_ND = Double.parseDouble(((String) tvISOND.getText()));
+        Double EV = (Math.log(N * N) / Math.log(2)) +
+                (Math.log(1 / t) / Math.log(2)) -
+                (Math.log(ISO / ISO_ND) / Math.log(2));
+        Log.d(TAG, "EV WITH ISO= " + EV);
+
+    }
+
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
