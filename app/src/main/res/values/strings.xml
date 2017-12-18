@@ -2,48 +2,172 @@
     <string name="app_name">Exposure</string>
 
     <string-array name="apertures">
-        <item>1</item>
+        <item>1.0</item>
+        <item>1.1</item>
+        <item>1.2</item>
+        <item>1.4</item>
+        <item>1.6</item>
+        <item>1.8</item>
+        <item>2.0</item>
+        <item>2.2</item>
+        <item>2.5</item>
         <item>2.8</item>
-        <item>3.4</item>
+        <item>3.2</item>
+        <item>3.5</item>
+        <item>4.0</item>
         <item>4.5</item>
-        <item>5.2</item>
-        <item>6.8</item>
-        <item>7.4</item>
-        <item>8.4</item>
+        <item>5.0</item>
+        <item>5.6</item>
+        <item>6.3</item>
+        <item>7.1</item>
+        <item>8.0</item>
+        <item>9.0</item>
+        <item>10</item>
+        <item>11</item>
+        <item>13</item>
+        <item>14</item>
+        <item>16</item>
+        <item>18</item>
+        <item>20</item>
+        <item>22</item>
+        <item>25</item>
+        <item>29</item>
+        <item>32</item>
+        <item>36</item>
+        <item>40</item>
+        <item>45</item>
+        <item>51</item>
+        <item>57</item>
+        <item>74</item>
     </string-array>
 
 
     <string-array name="speeds">
-        <item>1/1000</item>
-        <item>1/100</item>
+        <item>30s</item>
+        <item>25s</item>
+        <item>20s</item>
+        <item>15s</item>
+        <item>13s</item>
+        <item>10s</item>
+        <item>8s</item>
+        <item>6s</item>
+        <item>5s</item>
+        <item>4s</item>
+        <item>3.2s</item>
+        <item>2.5s</item>
+        <item>2s</item>
+        <item>1.6s</item>
+        <item>1.3s</item>
+        <item>1s</item>
+        <item>0.8s</item>
+        <item>0.6s</item>
+        <item>0.5s</item>
+        <item>0.4s</item>
+        <item>0.3s</item>
+        <item>1/4</item>
+        <item>1/5</item>
+        <item>1/6</item>
+        <item>1/8</item>
         <item>1/10</item>
-        <item>1</item>
-        <item>10</item>
-        <item>50</item>
-        <item>100</item>
-        <item>500</item>
+        <item>1/13</item>
+        <item>1/15</item>
+        <item>1/20</item>
+        <item>1/25</item>
+        <item>1/30</item>
+        <item>1/40</item>
+        <item>1/50</item>
+        <item>1/60</item>
+        <item>1/80</item>
+        <item>1/100</item>
+        <item>1/125</item>
+        <item>1/160</item>
+        <item>1/200</item>
+        <item>1/250</item>
+        <item>1/320</item>
+        <item>1/400</item>
+        <item>1/500</item>
+        <item>1/640</item>
+        <item>1/800</item>
+        <item>1/1000</item>
+        <item>1/1250</item>
+        <item>1/1600</item>
+        <item>1/2000</item>
+        <item>1/2500</item>
+        <item>1/3200</item>
+        <item>1/4000</item>
+        <item>1/5000</item>
+        <item>1/6400</item>
+        <item>1/8000</item>
+
     </string-array>
 
 
     <string-array name="iso">
         <item>50</item>
         <item>100</item>
+        <item>125</item>
+        <item>160</item>
         <item>200</item>
+        <item>250</item>
+        <item>320</item>
+        <item>400</item>
         <item>500</item>
+        <item>640</item>
+        <item>800</item>
         <item>1000</item>
+        <item>1250</item>
+        <item>1600</item>
         <item>2000</item>
+        <item>2500</item>
+        <item>3200</item>
+        <item>4000</item>
         <item>5000</item>
+        <item>6400</item>
+        <item>8000</item>
         <item>10000</item>
+        <item>12800</item>
+        <item>16000</item>
+        <item>20000</item>
+        <item>25600</item>
+        <item>32000</item>
+        <item>40000</item>
+        <item>51200</item>
+        <item>64000</item>
+        <item>80000</item>
+        <item>10200</item>
     </string-array>
 
     <string-array name="stops">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
+        <item>0</item>
+        <item>1-stop</item>
+        <item>2-stop</item>
+        <item>3-stop</item>
+        <item>4-stop</item>
+        <item>5-stop</item>
+        <item>6-stop</item>
+        <item>7-stop</item>
+        <item>8-stop</item>
+        <item>9-stop</item>
+        <item>10-stop</item>
+        <item>11-stop</item>
+        <item>12-stop</item>
+        <item>13-stop</item>
+        <item>14-stop</item>
+        <item>15-stop</item>
+        <item>16-stop</item>
+        <item>17-stop</item>
+        <item>18-stop</item>
+        <item>19-stop</item>
+        <item>20-stop</item>
+        <item>21-stop</item>
+        <item>22-stop</item>
+        <item>23-stop</item>
+        <item>24-stop</item>
+        <item>25-stop</item>
+        <item>26-stop</item>
+        <item>27-stop</item>
+        <item>28-stop</item>
+        <item>29-stop</item>
+        <item>30-stop</item>
     </string-array>
 </resources>
