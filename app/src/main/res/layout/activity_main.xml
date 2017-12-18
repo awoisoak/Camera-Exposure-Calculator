@@ -7,135 +7,204 @@
     android:layout_height="match_parent"
     tools:context="com.awoisoak.exposure.presentation.MainActivity">
 
-    <TextView
-        android:id="@+id/tv_nd_aperture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <SeekBar
+        android:id="@+id/seekBar_nd_stops"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:max="10"
+
+        android:paddingLeft="32dp"
+        android:paddingStart="32dp"
+        android:paddingEnd="20dp"
+        android:progress="3"
+        android:thumb="@drawable/stops_48"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_nd_stops"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar_nd_iso"/>
+    <SeekBar
+        android:id="@+id/seekBar_nd_iso"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:max="10"
+        android:paddingEnd="20dp"
+        android:paddingStart="32dp"
+
+        android:progress="3"
+        android:thumb="@drawable/iso_56"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_nd_iso"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar_nd_aperture" android:paddingRight="20dp"
+        android:paddingLeft="32dp"/>
+    <SeekBar
+        android:id="@+id/seekBar_aperture"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
         android:layout_marginTop="8dp"
-        android:text="Aperture"
-        app:layout_constraintBottom_toTopOf="@+id/spinner_nd_aperture"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv__nd_exposure"
-        app:layout_constraintVertical_bias="0.609"/>
+        android:max="10"
+        android:paddingEnd="16dp"
+        android:paddingLeft="32dp"
+
+        android:paddingRight="16dp"
+        android:paddingStart="32dp"
+        android:progress="3"
+        android:thumb="@drawable/aperture_56"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_aperture"
+        app:layout_constraintTop_toBottomOf="@+id/tv_current_exposure2"/>
+    <SeekBar
+        android:id="@+id/seekBar_shutter"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:max="10"
+        android:paddingEnd="24dp"
+        android:paddingStart="32dp"
+
+        android:progress="3"
+        android:thumb="@drawable/speed_48"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/tv_speed"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar_aperture"
+        tools:layout_editor_absoluteY="85dp" android:paddingRight="24dp"
+        android:paddingLeft="32dp"/>
+    <SeekBar
+        android:id="@+id/seekBar_nd_aperture"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="8dp"
+        android:max="10"
+        android:paddingEnd="16dp" android:paddingStart="32dp"
+
+        android:progress="3"
+        android:thumb="@drawable/aperture_56"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_nd_aperture"
+        app:layout_constraintTop_toBottomOf="@+id/tv__nd_exposure" android:paddingRight="16dp"/>
     <TextView
         android:id="@+id/tv__nd_exposure"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp" android:layout_marginLeft="0dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="ND Exposure"
         android:textColor="@color/colorAccent"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/spinner_nd_aperture"
-        app:layout_constraintStart_toStartOf="parent" tools:layout_editor_absoluteY="266dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar_iso" android:layout_marginLeft="8dp"/>
     <TextView
         android:id="@+id/tv_current_exposure2"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:layout_marginBottom="8dp"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="8dp" android:layout_marginStart="8dp"
         android:layout_marginTop="8dp" android:text="Base Exposure"
         android:textColor="@color/colorAccent"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/tv_shutter_speed2"
         app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-    <Spinner
-        android:id="@+id/spinner_iso"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp" android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp" app:layout_constraintBottom_toTopOf="@+id/tv__nd_exposure"
-        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"/>
-    <Spinner
-        android:id="@+id/spinner_shutter_speed"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp" app:layout_constraintBottom_toTopOf="@+id/tv_iso"
-        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"/>
-    <Spinner
-        android:id="@+id/spinner_aperture"
-        android:layout_width="wrap_content" android:layout_height="18dp"
-        android:layout_marginBottom="24dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp"
-        app:layout_constraintBottom_toTopOf="@+id/tv_aperture"
-        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"/>
     <TextView
-        android:id="@+id/tv_iso"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:layout_marginBottom="0dp"
-        android:layout_marginEnd="8dp" android:layout_marginStart="8dp"
-        android:text="ISO" app:layout_constraintBottom_toTopOf="@+id/spinner_iso"
-        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"/>
-    <TextView
-        android:id="@+id/tv_shutter_speed2"
+        android:id="@+id/tv_final_shutter_speed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp" android:layout_marginStart="8dp"
-        android:text="Shutter Speed"
-        app:layout_constraintBottom_toTopOf="@+id/spinner_aperture"
-        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
-    />
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="64dp"
+        android:text="2m 30s"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_nd_stops" android:layout_marginLeft="8dp"/>
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_final_shutter_speed"
+        app:layout_constraintTop_toBottomOf="@+id/tv_nd_stops" android:layout_marginRight="8dp"
+        android:layout_marginLeft="32dp"/>
     <TextView
         android:id="@+id/tv_aperture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:text="Aperture"
-        app:layout_constraintBottom_toTopOf="@+id/spinner_shutter_speed"
-        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0.501"
-        app:layout_constraintStart_toStartOf="parent"/>
-    <Spinner
-        android:id="@+id/spinner_nd_aperture"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:layout_marginEnd="32dp" android:layout_marginStart="32dp"
-        app:layout_constraintBottom_toTopOf="@+id/tv_nd_iso"
+        android:layout_marginTop="16dp" android:text="TextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_current_exposure2"
+        android:layout_marginLeft="8dp"/>
+    <SeekBar
+        android:id="@+id/seekBar_iso"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:max="10"
+        android:paddingEnd="20dp" android:paddingStart="32dp"
+
+        android:progress="3"
+        android:thumb="@drawable/iso_56"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.49" app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toEndOf="@+id/tv_iso"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar_shutter" android:paddingRight="20dp"
+        android:paddingLeft="32dp"/>
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/tv_speed"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:text="ND stops"
-        app:layout_constraintBottom_toTopOf="@+id/spinner_nd_stops" app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:layout_height="wrap_content" android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp" android:text="TextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_aperture"
+        tools:layout_editor_absoluteX="8dp" android:layout_marginLeft="8dp"/>
+    <TextView
+        android:id="@+id/tv_iso"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp" android:text="TextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_speed" android:layout_marginLeft="8dp"/>
+    <TextView
+        android:id="@+id/tv_nd_aperture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp" android:text="TextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv__nd_exposure" android:layout_marginLeft="8dp"/>
     <TextView
         android:id="@+id/tv_nd_iso"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:text="ISO"
-        app:layout_constraintBottom_toTopOf="@+id/spinner_nd_iso" app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:layout_height="wrap_content" android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp" android:text="TextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_nd_aperture"
+        tools:layout_editor_absoluteX="8dp" android:layout_marginLeft="8dp"/>
     <TextView
-        android:id="@+id/tv_final_shutter_speed"
+        android:id="@+id/tv_nd_stops"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:layout_marginBottom="16dp"
-        android:layout_marginEnd="8dp" android:layout_marginStart="8dp"
-        android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-    <Spinner
-        android:id="@+id/spinner_nd_iso"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp" android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp" app:layout_constraintBottom_toTopOf="@+id/textView3"
-        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"/>
-    <Spinner
-        android:id="@+id/spinner_nd_stops"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp"
-        app:layout_constraintBottom_toTopOf="@+id/tv_final_shutter_speed"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:layout_height="wrap_content" android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp" android:text="TextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_nd_iso"
+        tools:layout_editor_absoluteX="0dp" android:layout_marginLeft="8dp"/>
 
 </android.support.constraint.ConstraintLayout>

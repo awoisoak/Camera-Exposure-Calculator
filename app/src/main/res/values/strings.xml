@@ -3,13 +3,13 @@
 
     <string-array name="apertures">
         <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
+        <item>2.8</item>
+        <item>3.4</item>
+        <item>4.5</item>
+        <item>5.2</item>
+        <item>6.8</item>
+        <item>7.4</item>
+        <item>8.4</item>
     </string-array>
 
 

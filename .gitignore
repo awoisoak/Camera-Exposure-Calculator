@@ -7,3 +7,19 @@
 /build
 /captures
 .externalNativeBuild
+
+# Android Studio
+.idea/
+build/
+*.iml
+
+
+# Optional Content
+/*/out
+/*/*/build
+/*/*/production
+*.iws
+*.ipr
+*~
+*.swp
+*.orig
