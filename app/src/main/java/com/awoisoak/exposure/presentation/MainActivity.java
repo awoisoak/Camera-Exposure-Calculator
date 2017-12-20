@@ -1,5 +1,6 @@
 package com.awoisoak.exposure.presentation;
 
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,9 +13,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-
 //TODO apply blue instead pink
-//TODO display the EV in a textview
+//TODO format the speed values <1 properly
+//TODO implement f-stops seekbar
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
@@ -50,6 +51,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     TextView tvStopsND;
     @BindView(R.id.seekBar_nd_stops)
     SeekBar seekBarStopsND;
+
+    @BindView(R.id.tv_EV)
+    TextView tv_EV;
+    @BindView(R.id.tv_final_shutter_speed)
+    TextView tv_final_sutther_speed;
 
     String[] apertureValues;
     String[] speedValues;
@@ -94,10 +100,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         switch (seekBar.getId()) {
             case R.id.seekBar_aperture:
-                tvAperture.setText(apertureValues[i]);
+                tvAperture.setText("f/" + apertureValues[i]);
                 break;
             case R.id.seekBar_nd_aperture:
-                tvApertureND.setText(apertureValues[i]);
+                tvApertureND.setText("f/" + apertureValues[i]);
                 break;
             case R.id.seekBar_shutter:
                 tvSpeed.setText(speedValues[i]);
@@ -120,34 +126,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
     /**
-     * https://en.wikipedia.org/wiki/Exposure_value
-     * Exposure value is a base-2 logarithmic scale defined by:
-     *
-     * EV = log₂ (N^2 / t)
-     *
-     * where:
-     * - N is the relative aperture (f-number)
-     * - t is the exposure time ("shutter speed") in seconds[2]
-     *
-     * Aperture f-1 AND shutter 1s gives you EV = 0.0
-     */
-    private void calculateEV() {
-        /**
-         * Seems like the Seekbars are triggering the events right away they are created.
-         * We need to wait for the rest of seekbars to bee created too
-         */
-        if (tvSpeed.getText().equals("TextView")) {
-            Log.e(TAG, "tvSpeed text is TextView...");
-            return;
-        }
-        Double N = Double.parseDouble((String) tvAperture.getText());
-        Double t = parseSpeed();
-        Double EV = Math.log(N * N / t) / Math.log(2);
-        Log.d(TAG, "EV = " + EV);
-    }
-
-
-    /**
      * https://photo.stackexchange.com/questions/32359/why-does-ev-increase-as-iso-increases
      * the  log₂(100/S) is wrong on that link!
      *
@@ -162,11 +140,15 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      */
     private Double calculateEVWithISO() {
 
-        Double N = Double.parseDouble((String) tvAperture.getText());
+        Double N = Double.parseDouble(((String) tvAperture.getText()).split("f/")[1]);
         Double t = parseSpeed();
         Double ISO = Double.parseDouble(((String) tvISO.getText()));
-        return (Math.log(N * N) / Math.log(2)) + (Math.log(1 / t) / Math.log(2)) -
+        Double EV = (Math.log(N * N) / Math.log(2)) + (Math.log(1 / t) / Math.log(2)) -
                 (Math.log(ISO / 100) / Math.log(2));
+        //We only want to display 1 digit
+        String tmp = String.format("EV = %.1f", EV);
+        tv_EV.setText(tmp);
+        return EV;
     }
 
     /**
@@ -190,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         if (!areSeekBarInitialized()) {
             return;
         }
-        Double apertureND = Double.parseDouble((String) tvApertureND.getText());
+        Double apertureND = Double.parseDouble(((String) tvApertureND.getText()).split("f/")[1]);
         Double ISO_ND = Double.parseDouble(((String) tvISOND.getText()));
         Double EV = calculateEVWithISO();
         System.out.println("__________________________");
@@ -199,9 +181,113 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Log.d(TAG, "ISO_ND = " + ISO_ND);
 
         Double shutterSpeed = (100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV));
-
+        tv_final_sutther_speed.setText(formatSpeed(shutterSpeed));
         Log.d(TAG, "speed =  " + shutterSpeed);
         System.out.println("__________________________");
+    }
+
+    /**
+     * Format the final shutter speed to display to the user properly
+     */
+    private String formatSpeed(Double unformattedSpeed) {
+        //TODO manage the speed under 1s
+
+        double hours = unformattedSpeed / 3600;
+        double minutes = (unformattedSpeed % 3600) / 60;
+        double seconds = unformattedSpeed % 60;
+
+        //We round the seconds to the closest value leaving just one decimal
+        hours = StrictMath.round(hours);
+        minutes = StrictMath.round(minutes);
+        String minutesToDisplay = String.valueOf(minutes);
+        String hoursToDisplay = String.valueOf(hours);
+
+        //Remove the X.0 values
+        double fraction;
+        fraction = minutes % 1;
+        if (fraction == 0.0) {
+            minutesToDisplay = minutesToDisplay.split("\\.")[0];
+        }
+        fraction = hours % 1;
+        if (fraction == 0.0) {
+            hoursToDisplay = hoursToDisplay.split("\\.")[0];
+        }
+
+        /*
+        Seconds formatting are more tricky as per speed under 1s we will need all possible digits
+         */
+        String secondsToDisplay = "awooooo";
+        if (seconds >= 0.3) {
+            seconds = StrictMath.round(seconds * 10.0) / 10.0;
+            secondsToDisplay = String.valueOf(seconds);
+
+            //Remove the X.0 values
+            fraction = seconds % 1;
+            if (fraction == 0.0) {
+                secondsToDisplay = secondsToDisplay.split("\\.")[0];
+            }
+        } else if (seconds > 0.1) {
+            //TODO Here we shall not round the number. We will need to display fractions like 1/4
+            // instead of 0.25
+                        /*
+            1/6 = 0.1667
+            0.16666666666
+
+              1/x = 0.1666
+              1= 0.16666*x
+              x= 1/0.1666
+              x=6.002
+
+                 */
+            double x = 1 / seconds;
+            x = StrictMath.round(x);
+
+            secondsToDisplay = "1/" + x;
+
+        } else { //< 0.1 (1/10)
+            double x = 1 / seconds;
+            double unrounded = StrictMath.round(x * 100) / 100;
+            //TODO here we have to round on numbers powers of 5 (1/125,1/200...)[UPDATE THIS IS WRONG! KEEP READING]
+            //TODO if we get 1/62 we need to change it to 1/60
+            //TODO if we get 1/156 we need to change it to 1/160
+            //TODO if we get 1/785 we need to change it to 1/800 (14,1/4,100)
+            //TODO Actually the values have to be the ones defined in the XML cause the camera has specific
+            // shutter speeds...maybe we should check which is the closest number of the ones in the string
+            // array
+
+
+            double n = unrounded % 5;
+            double rounded;
+            if (n > 2) {
+                rounded = unrounded + 5 - n;
+            } else {
+                rounded = unrounded - n;
+            }
+
+
+            //TODO we can not accept values bigger than 8000 cause is the maximum shutter speed
+            //TODO here we should set the text in red and give some feedback to the user
+
+
+            secondsToDisplay = "1/" + rounded;
+        }
+
+
+        String speed;
+        if (minutes < 1 && hours < 1) {
+            speed = secondsToDisplay + "s";
+        } else if (minutes >= 1 && hours <= 0) {
+            if (minutes < 10) {
+                speed = minutesToDisplay + "m " + secondsToDisplay + "s";
+            } else {
+                speed = minutesToDisplay + "m " + secondsToDisplay + "s";
+            }
+        } else {
+            speed = hoursToDisplay + "h " + minutesToDisplay + "m " + secondsToDisplay + "s";
+        }
+
+        Log.d(TAG, "formatted speed = " + speed);
+        return speed;
     }
 
     /**

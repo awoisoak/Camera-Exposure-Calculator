@@ -201,5 +201,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_nd_iso"
         tools:layout_editor_absoluteX="0dp" android:layout_marginLeft="8dp"/>
+    <TextView
+        android:id="@+id/tv_EV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="EV = 0"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/tv__nd_exposure"
+        app:layout_constraintEnd_toEndOf="parent" tools:layout_editor_absoluteX="119dp"/>
 
 </android.support.constraint.ConstraintLayout>

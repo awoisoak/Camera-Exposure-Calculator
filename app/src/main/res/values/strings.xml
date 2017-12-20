@@ -64,40 +64,40 @@
         <item>0.5s</item>
         <item>0.4s</item>
         <item>0.3s</item>
-        <item>1/4</item>
-        <item>1/5</item>
-        <item>1/6</item>
-        <item>1/8</item>
-        <item>1/10</item>
-        <item>1/13</item>
-        <item>1/15</item>
-        <item>1/20</item>
-        <item>1/25</item>
-        <item>1/30</item>
-        <item>1/40</item>
-        <item>1/50</item>
-        <item>1/60</item>
-        <item>1/80</item>
-        <item>1/100</item>
-        <item>1/125</item>
-        <item>1/160</item>
-        <item>1/200</item>
-        <item>1/250</item>
-        <item>1/320</item>
-        <item>1/400</item>
-        <item>1/500</item>
-        <item>1/640</item>
-        <item>1/800</item>
-        <item>1/1000</item>
-        <item>1/1250</item>
-        <item>1/1600</item>
-        <item>1/2000</item>
-        <item>1/2500</item>
-        <item>1/3200</item>
-        <item>1/4000</item>
-        <item>1/5000</item>
-        <item>1/6400</item>
-        <item>1/8000</item>
+        <item>1/4s</item>
+        <item>1/5s</item>
+        <item>1/6s</item>
+        <item>1/8s</item>
+        <item>1/10s</item>
+        <item>1/13s</item>
+        <item>1/15s</item>
+        <item>1/20s</item>
+        <item>1/25s</item>
+        <item>1/30s</item>
+        <item>1/40s</item>
+        <item>1/50s</item>
+        <item>1/60s</item>
+        <item>1/80s</item>
+        <item>1/100s</item>
+        <item>1/125s</item>
+        <item>1/160s</item>
+        <item>1/200s</item>
+        <item>1/250s</item>
+        <item>1/320s</item>
+        <item>1/400s</item>
+        <item>1/500s</item>
+        <item>1/640s</item>
+        <item>1/800s</item>
+        <item>1/1000s</item>
+        <item>1/1250s</item>
+        <item>1/1600s</item>
+        <item>1/2000s</item>
+        <item>1/2500s</item>
+        <item>1/3200s</item>
+        <item>1/4000s</item>
+        <item>1/5000s</item>
+        <item>1/6400s</item>
+        <item>1/8000s</item>
 
     </string-array>
 
