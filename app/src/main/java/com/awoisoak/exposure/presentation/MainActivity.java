@@ -11,12 +11,10 @@ import com.awoisoak.exposure.R;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-//TODO the random problems with the values might come for not using Big Decimals...should we try to use float instead of Double?
+
+
 //TODO apply blue instead pink
-//TODO create a "class converter" to apply a custom value (like 2.8) to a specific porcentage
-// (like 10% of the seekbar)
-//TODO add custom icon to the seekbar index so we could even get rid of the images at the left
-//TODO let the user personalize the values?
+//TODO display the EV in a textview
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
@@ -116,8 +114,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             default:
                 Log.e(TAG, "onProgressChanged | Seekbar not found");
         }
-        calculateEV();
-        calculateEVWithISO();
+
         calculateNDShutterSpeed();
     }
 
@@ -150,78 +147,90 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
 
-
     /**
      * https://photo.stackexchange.com/questions/32359/why-does-ev-increase-as-iso-increases
+     * the  log₂(100/S) is wrong on that link!
      *
-     * EV = log₂(N²) + log₂(1/t) - log₂(100/S)
+     * EV = log₂(N²) + log₂(1/t) - log₂(S/100)
      * EV = aperture + shutter - ISO
+     *
+     *
+     * https://photo.stackexchange.com/questions/73304/when-to-use-the-lv-formula
+     * Another way to look at it
+     * EV = log2(f^2/T)          Exposure Value
+     * LV = EV + log2(ISO/100)   Light Value (= EV assumes ISO 100)
      */
     private Double calculateEVWithISO() {
-        /**
-         * Seems like the Seekbars are triggering the events right away they are created.
-         * We need to wait for the rest of seekbars to bee created too
-         */
-        if (tvSpeed.getText().equals("TextView") || tvISO.getText().equals("TextView")
-                || tvISOND.getText().equals("TextView")) {
-            Log.e(TAG, "tvSpeed text is TextView...");
-            return -1.0;
-        }
+
         Double N = Double.parseDouble((String) tvAperture.getText());
         Double t = parseSpeed();
         Double ISO = Double.parseDouble(((String) tvISO.getText()));
-//        Double ISO_ND = Double.parseDouble(((String) tvISOND.getText()));
-        Double EV = (Math.log(N * N) / Math.log(2)) +
-                (Math.log(1 / t) / Math.log(2)) -
-                (Math.log(100 / ISO) / Math.log(2));
-        Log.d(TAG, "EV WITH ISO= " + EV);
-        return EV;
-
+        return (Math.log(N * N) / Math.log(2)) + (Math.log(1 / t) / Math.log(2)) -
+                (Math.log(ISO / 100) / Math.log(2));
     }
 
     /**
      * https://photo.stackexchange.com/questions/32359/why-does-ev-increase-as-iso-increases
+     * the  log₂(100/S) is wrong on that link!
+     * The correct formula appears in Wikipedia
+     * https://en.wikipedia.org/wiki/Exposure_value
      *
-     * EV = log₂(N²) + log₂(1/t) - log₂(100/S)
+     * EV = log₂(N²) + log₂(1/t) - log₂(S/100)
      * EV = aperture + shutter - ISO
      *
-     * where:
+     * t = S*N²/100*2^EV
+     *
+     * * where:
      * - N is the relative aperture (f-number)
      * - t is the exposure time ("shutter speed") in seconds[2]
      * - 100 is the default ISO
      * - S is the new ISO
-     *
-     * Isolating t:
-     * t = 1/(2^EV + log₂(100/S) - log₂(N²))
      */
     private void calculateNDShutterSpeed() {
-        /**
-         * Seems like the Seekbars are triggering the events right away they are created.
-         * We need to wait for the rest of seekbars to bee created too
-         */
-        if (tvSpeed.getText().equals("TextView") || tvISO.getText().equals("TextView")
-                || tvISOND.getText().equals("TextView")) {
-            Log.e(TAG, "tvSpeed text is TextView...");
+        if (!areSeekBarInitialized()) {
             return;
         }
         Double apertureND = Double.parseDouble((String) tvApertureND.getText());
-//        Double t = Double.parseDouble(((String) tvSpeed.getText()).split("s")[0]);
-//        Double ISO = Double.parseDouble(((String) tvISO.getText()));
         Double ISO_ND = Double.parseDouble(((String) tvISOND.getText()));
         Double EV = calculateEVWithISO();
+        System.out.println("__________________________");
+        Log.d(TAG, "EV = " + EV);
+        Log.d(TAG, "apertureND = " + apertureND);
+        Log.d(TAG, "ISO_ND = " + ISO_ND);
 
-        Double shutterSpeed = 1 / (Math.pow(2, EV) +
-                (Math.log(100 / ISO_ND) / Math.log(2)) -
-                (Math.log(apertureND * apertureND) / Math.log(2)));
+        Double shutterSpeed = (100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV));
 
-
-        Log.d(TAG, "New Shutter speed is= " + shutterSpeed);
-
+        Log.d(TAG, "speed =  " + shutterSpeed);
+        System.out.println("__________________________");
     }
 
     /**
+     * Seems like the Seekbars are triggering the events right away they are created.
+     * We need to wait for the rest of seekbars to bee created too
+     */
+    //TODO find out a better way to hack this
+    private boolean areSeekBarInitialized() {
+        if (tvSpeed.getText().equals("TextView") || tvISO.getText().equals("TextView")
+                || tvISOND.getText().equals("TextView")) {
+            Log.e(TAG, "tvSpeed text is TextView...");
+            return false;
+        }
+        return true;
+    }
+
+
+//    //TODO try this formula?
+//    https://photo.stackexchange.com/questions/89563/is-there-a-formula-to-calculate-iso
+// -according-to-shutter-speed
+//    Mathematically, you can calculate it all via:
+//
+//    sISO = ln(ISO / 100) / ln(2)
+//    sAperture = -ln(Aperture) / ln(√2)
+//    sShutter = EV + sISO + sAperture
+//    Shutter speed = 2-sShutter
+
+    /**
      * Convert the speed values into 'real' Double numbers
-     * @return
      */
     private Double parseSpeed() {
         String tmp = ((String) tvSpeed.getText()).split("s")[0];
