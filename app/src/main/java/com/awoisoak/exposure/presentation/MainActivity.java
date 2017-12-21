@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final float MAX_SPEED = 1f / 80000f;
+    private static final float MAX_SPEED =  1f / 8000f;
 
 
     @BindView(R.id.tv_aperture)
@@ -216,6 +216,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * Format the final shutter speed to display to the user properly
      */
     private String formatSpeed(float unformattedSpeed) {
+        if (unformattedSpeed < MAX_SPEED) {
+            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
+            //TODO add some text explaining the situation to the user
+        } else {
+            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.black));
+        }
+
+
         int hours = (int) (unformattedSpeed / 3600);
         int minutes = (int) (unformattedSpeed % 3600) / 60;
         float seconds = unformattedSpeed % 60;
@@ -265,23 +273,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 }
             }
 
-
-            //TODO we can not accept values bigger than 8000 cause is the maximum shutter speed
-            //TODO it should be activated with f/22,1/20s,100 but is not (seems a problem
-            // comparing hugh double values)
-            //TODO once we pass it to float it might work?
-
-            if (seconds < MAX_SPEED) {
-                tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
-                //TODO add some text explaining the situation to the user
-            } else {
-                //TODO there is some bug when the final speed is even higher than 1s but still
-                // appears read
-                tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.black));
-            }
-
             secondsToDisplay = String.valueOf((speedValues[index]));
         }
+
+
+
+
+
 
 
         String speed;
