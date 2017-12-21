@@ -6,21 +6,25 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
 import com.awoisoak.exposure.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-
+//TODO there are cameras with electronic shutters that reach til 1/32000s (there are some) add them to the string array?
+//TODO Same for the ISO, cameras like sony a7s have higher values
+//TODO add a method to remove X.0 values
 //TODO apply blue instead pink
 //TODO format the speed values <1 properly
 //TODO implement f-stops seekbar
-
+//TODO when everything work try to use float instead of double
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    private static final double MAX_SPEED = 1f / 80000f;
+
 
     @BindView(R.id.tv_aperture)
     TextView tvAperture;
@@ -141,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private Double calculateEVWithISO() {
 
         Double N = Double.parseDouble(((String) tvAperture.getText()).split("f/")[1]);
-        Double t = parseSpeed();
+        Double t = parseSpeed((String) tvSpeed.getText());
         Double ISO = Double.parseDouble(((String) tvISO.getText()));
         Double EV = (Math.log(N * N) / Math.log(2)) + (Math.log(1 / t) / Math.log(2)) -
                 (Math.log(ISO / 100) / Math.log(2));
@@ -213,77 +217,77 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             hoursToDisplay = hoursToDisplay.split("\\.")[0];
         }
 
+
+
+
         /*
         Seconds formatting are more tricky as per speed under 1s we will need all possible digits
          */
-        String secondsToDisplay = "awooooo";
+        String secondsToDisplay;
         if (seconds >= 0.3) {
             seconds = StrictMath.round(seconds * 10.0) / 10.0;
-            secondsToDisplay = String.valueOf(seconds);
+            secondsToDisplay = String.valueOf(seconds) + "s";
 
             //Remove the X.0 values
             fraction = seconds % 1;
             if (fraction == 0.0) {
-                secondsToDisplay = secondsToDisplay.split("\\.")[0];
+                secondsToDisplay = secondsToDisplay.split("\\.")[0] + "s";
             }
-        } else if (seconds > 0.1) {
-            //TODO Here we shall not round the number. We will need to display fractions like 1/4
-            // instead of 0.25
-                        /*
-            1/6 = 0.1667
-            0.16666666666
-
-              1/x = 0.1666
-              1= 0.16666*x
-              x= 1/0.1666
-              x=6.002
-
-                 */
+        } else if (seconds > 0.1) {// >1/10
             double x = 1 / seconds;
             x = StrictMath.round(x);
+            secondsToDisplay = "1/" + x + "s";
 
-            secondsToDisplay = "1/" + x;
+            //Remove the X.0 values
+            fraction = x % 1;
+            if (fraction == 0.0) {
+                secondsToDisplay = secondsToDisplay.split("\\.")[0] + "s";
+            }
+        } else { // <1/10
 
-        } else { //< 0.1 (1/10)
-            double x = 1 / seconds;
-            double unrounded = StrictMath.round(x * 100) / 100;
-            //TODO here we have to round on numbers powers of 5 (1/125,1/200...)[UPDATE THIS IS WRONG! KEEP READING]
-            //TODO if we get 1/62 we need to change it to 1/60
-            //TODO if we get 1/156 we need to change it to 1/160
-            //TODO if we get 1/785 we need to change it to 1/800 (14,1/4,100)
-            //TODO Actually the values have to be the ones defined in the XML cause the camera has specific
-            // shutter speeds...maybe we should check which is the closest number of the ones in the string
-            // array
-
-
-            double n = unrounded % 5;
-            double rounded;
-            if (n > 2) {
-                rounded = unrounded + 5 - n;
-            } else {
-                rounded = unrounded - n;
+            double min = 30;
+            int index = -1;
+            double diff;
+            for (int i = speedValues.length - 1; i >= 0; i--) {
+                diff = Math.abs(seconds - parseSpeed(speedValues[i]));
+                if (diff < min) {
+                    min = diff;
+                    index = i;
+                }
+                else {
+                    break;
+                }
             }
 
 
             //TODO we can not accept values bigger than 8000 cause is the maximum shutter speed
-            //TODO here we should set the text in red and give some feedback to the user
+            //TODO it should be activated with f/22,1/20s,100 but is not (seems a problem
+            // comparing hugh double values)
+            //TODO once we pass it to float it might work?
 
+            if (seconds < MAX_SPEED) {
+                tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
+                //TODO add some text explaining the situation to the user
+            } else {
+                //TODO there is some bug when the final speed is even higher than 1s but still appears read
+                tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.black));
+            }
 
-            secondsToDisplay = "1/" + rounded;
+            secondsToDisplay = String.valueOf((speedValues[index]));
         }
 
 
         String speed;
         if (minutes < 1 && hours < 1) {
-            speed = secondsToDisplay + "s";
+            speed = secondsToDisplay;
         } else if (minutes >= 1 && hours <= 0) {
             if (minutes < 10) {
-                speed = minutesToDisplay + "m " + secondsToDisplay + "s";
+                speed = minutesToDisplay + "m " + secondsToDisplay;
             } else {
-                speed = minutesToDisplay + "m " + secondsToDisplay + "s";
+                speed = minutesToDisplay + "m " + secondsToDisplay;
             }
         } else {
-            speed = hoursToDisplay + "h " + minutesToDisplay + "m " + secondsToDisplay + "s";
+            speed = hoursToDisplay + "h " + minutesToDisplay + "m " + secondsToDisplay;
         }
 
         Log.d(TAG, "formatted speed = " + speed);
@@ -318,8 +322,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     /**
      * Convert the speed values into 'real' Double numbers
      */
-    private Double parseSpeed() {
-        String tmp = ((String) tvSpeed.getText()).split("s")[0];
+    private Double parseSpeed(String uSpeed) {
+        String tmp = uSpeed.split("s")[0];
         if (tmp.contains("1/")) {
             tmp = tmp.split("1/")[1];
             return 1 / Double.parseDouble(tmp);
