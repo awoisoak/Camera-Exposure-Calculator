@@ -19,12 +19,14 @@ import butterknife.ButterKnife;
 //TODO add a method to remove X.0 values
 //TODO apply blue instead pink
 //TODO when everything work try to use float instead of double
+//TODO add a ViewModel and implement calls to onsaveinstance...?
+//TODO disable landscape mode
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final double MAX_SPEED = 1f / 80000f;
+    private static final float MAX_SPEED = 1f / 80000f;
 
 
     @BindView(R.id.tv_aperture)
@@ -143,13 +145,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * EV = log2(f^2/T)          Exposure Value
      * LV = EV + log2(ISO/100)   Light Value (= EV assumes ISO 100)
      */
-    private Double calculateEVWithISO() {
+    private float calculateEVWithISO() {
 
-        Double N = Double.parseDouble(((String) tvAperture.getText()).split("f/")[1]);
-        Double t = parseSpeed((String) tvSpeed.getText());
-        Double ISO = Double.parseDouble(((String) tvISO.getText()));
-        Double EV = (Math.log(N * N) / Math.log(2)) + (Math.log(1 / t) / Math.log(2)) -
-                (Math.log(ISO / 100) / Math.log(2));
+        float N = Float.parseFloat(((String) tvAperture.getText()).split("f/")[1]);
+        float t = parseSpeed((String) tvSpeed.getText());
+        float ISO = Float.parseFloat(((String) tvISO.getText()));
+        float EV = (float) ((Math.log(N * N) / Math.log(2)) + (Math.log(1 / t) / Math.log(2)) -
+                        (Math.log(ISO / 100) / Math.log(2)));
         //We only want to display 1 digit
         String tmp = String.format("EV = %.1f", EV);
         tv_EV.setText(tmp);
@@ -177,15 +179,15 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         if (!areSeekBarInitialized()) {
             return;
         }
-        Double apertureND = Double.parseDouble(((String) tvApertureND.getText()).split("f/")[1]);
-        Double ISO_ND = Double.parseDouble(((String) tvISOND.getText()));
-        Double EV = calculateEVWithISO();
+        Float apertureND = Float.parseFloat(((String) tvApertureND.getText()).split("f/")[1]);
+        Float ISO_ND = Float.parseFloat(((String) tvISOND.getText()));
+        Float EV = calculateEVWithISO();
         System.out.println("__________________________");
         Log.d(TAG, "EV = " + EV);
         Log.d(TAG, "apertureND = " + apertureND);
         Log.d(TAG, "ISO_ND = " + ISO_ND);
 
-        Double shutterSpeed = (100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV));
+        float shutterSpeed = (float) ((100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV)));
         Log.d(TAG, "speed =  " + shutterSpeed);
         shutterSpeed = calculateSpeedWithNDFilterAdded(shutterSpeed,
                 (Float.valueOf(((String) tvStopsND.getText()).split("-")[0])));
@@ -206,23 +208,23 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * - T0 is the Base shutter speed (without filter attached) in seconds
      * - Tnd is the final exposure time
      */
-    private double calculateSpeedWithNDFilterAdded(Double originalSpeed, float stopValue) {
-        return originalSpeed * Math.pow(2, stopValue);
+    private float calculateSpeedWithNDFilterAdded(float originalSpeed, float stopValue) {
+        return (float) (originalSpeed * Math.pow(2, stopValue));
     }
 
     /**
      * Format the final shutter speed to display to the user properly
      */
-    private String formatSpeed(Double unformattedSpeed) {
+    private String formatSpeed(float unformattedSpeed) {
         int hours = (int) (unformattedSpeed / 3600);
         int minutes = (int) (unformattedSpeed % 3600) / 60;
-        double seconds = unformattedSpeed % 60;
+        float seconds = unformattedSpeed % 60;
 
         String minutesToDisplay = String.valueOf(minutes);
         String hoursToDisplay = String.valueOf(hours);
 
         //Remove the X.0 values
-        double fraction;
+        float fraction;
         fraction = minutes % 1;
         if (fraction == 0.0) {
             minutesToDisplay = minutesToDisplay.split("\\.")[0];
@@ -240,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
          */
         String secondsToDisplay;
         if (hours >= 1 || minutes >= 1 || seconds > 30) {//Longer shutter speed than 30s
-            seconds = StrictMath.round(seconds * 10.0) / 10.0;
+            seconds = (float) (StrictMath.round(seconds * 10.0) / 10.0);
             secondsToDisplay = String.valueOf(seconds) + "s";
 
             //Remove the X.0 values
@@ -250,9 +252,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             }
         } else { //Less than 30s
 
-            double min = 30;
+            float min = 30;
             int index = -1;
-            double diff;
+            float diff;
             for (int i = speedValues.length - 1; i >= 0; i--) {
                 diff = Math.abs(seconds - parseSpeed(speedValues[i]));
                 if (diff < min) {
@@ -327,13 +329,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     /**
      * Convert the speed values into 'real' Double numbers
      */
-    private Double parseSpeed(String uSpeed) {
+    private float parseSpeed(String uSpeed) {
         String tmp = uSpeed.split("s")[0];
         if (tmp.contains("1/")) {
             tmp = tmp.split("1/")[1];
-            return 1 / Double.parseDouble(tmp);
+            return 1 / Float.parseFloat(tmp);
         }
-        return Double.parseDouble(tmp);
+        return Float.parseFloat(tmp);
     }
 
 
