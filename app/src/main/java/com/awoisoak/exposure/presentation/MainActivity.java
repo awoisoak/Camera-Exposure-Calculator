@@ -6,17 +6,18 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import com.awoisoak.exposure.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-//TODO there are cameras with electronic shutters that reach til 1/32000s (there are some) add them to the string array?
+//TODO there are cameras with electronic shutters that reach til 1/32000s (there are some) add
+// them to the string array?
+//TODO make functions for all the parsing/splits in the code?
 //TODO Same for the ISO, cameras like sony a7s have higher values
 //TODO add a method to remove X.0 values
 //TODO apply blue instead pink
-//TODO format the speed values <1 properly
-//TODO implement f-stops seekbar
 //TODO when everything work try to use float instead of double
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
@@ -125,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 Log.e(TAG, "onProgressChanged | Seekbar not found");
         }
 
-        calculateNDShutterSpeed();
+        calculateFinalSpeed();
     }
 
 
@@ -172,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * - 100 is the default ISO
      * - S is the new ISO
      */
-    private void calculateNDShutterSpeed() {
+    private void calculateFinalSpeed() {
         if (!areSeekBarInitialized()) {
             return;
         }
@@ -185,24 +186,38 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Log.d(TAG, "ISO_ND = " + ISO_ND);
 
         Double shutterSpeed = (100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV));
-        tv_final_sutther_speed.setText(formatSpeed(shutterSpeed));
         Log.d(TAG, "speed =  " + shutterSpeed);
+        shutterSpeed = calculateSpeedWithNDFilterAdded(shutterSpeed,
+                (Float.valueOf(((String) tvStopsND.getText()).split("-")[0])));
+        tv_final_sutther_speed.setText(formatSpeed(shutterSpeed));
+        Log.d(TAG, "speed ND=  " + shutterSpeed);
         System.out.println("__________________________");
+    }
+
+    /**
+     * Given an original speed and the Stop value of the attached NF filter, it calculates the final
+     * exposure time.
+     * http://www.vassilistangoulis.com/gr/?p=4958
+     *
+     * Tnd = T0 * 2^ND
+     *
+     * where:
+     * - ND is the Stop value of your ND filter
+     * - T0 is the Base shutter speed (without filter attached) in seconds
+     * - Tnd is the final exposure time
+     */
+    private double calculateSpeedWithNDFilterAdded(Double originalSpeed, float stopValue) {
+        return originalSpeed * Math.pow(2, stopValue);
     }
 
     /**
      * Format the final shutter speed to display to the user properly
      */
     private String formatSpeed(Double unformattedSpeed) {
-        //TODO manage the speed under 1s
-
-        double hours = unformattedSpeed / 3600;
-        double minutes = (unformattedSpeed % 3600) / 60;
+        int hours = (int) (unformattedSpeed / 3600);
+        int minutes = (int) (unformattedSpeed % 3600) / 60;
         double seconds = unformattedSpeed % 60;
 
-        //We round the seconds to the closest value leaving just one decimal
-        hours = StrictMath.round(hours);
-        minutes = StrictMath.round(minutes);
         String minutesToDisplay = String.valueOf(minutes);
         String hoursToDisplay = String.valueOf(hours);
 
@@ -224,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Seconds formatting are more tricky as per speed under 1s we will need all possible digits
          */
         String secondsToDisplay;
-        if (seconds >= 0.3) {
+        if (hours >= 1 || minutes >= 1 || seconds > 30) {//Longer shutter speed than 30s
             seconds = StrictMath.round(seconds * 10.0) / 10.0;
             secondsToDisplay = String.valueOf(seconds) + "s";
 
@@ -233,17 +248,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             if (fraction == 0.0) {
                 secondsToDisplay = secondsToDisplay.split("\\.")[0] + "s";
             }
-        } else if (seconds > 0.1) {// >1/10
-            double x = 1 / seconds;
-            x = StrictMath.round(x);
-            secondsToDisplay = "1/" + x + "s";
-
-            //Remove the X.0 values
-            fraction = x % 1;
-            if (fraction == 0.0) {
-                secondsToDisplay = secondsToDisplay.split("\\.")[0] + "s";
-            }
-        } else { // <1/10
+        } else { //Less than 30s
 
             double min = 30;
             int index = -1;
@@ -253,8 +258,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 if (diff < min) {
                     min = diff;
                     index = i;
-                }
-                else {
+                } else {
                     break;
                 }
             }
@@ -269,7 +273,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
                 //TODO add some text explaining the situation to the user
             } else {
-                //TODO there is some bug when the final speed is even higher than 1s but still appears read
+                //TODO there is some bug when the final speed is even higher than 1s but still
+                // appears read
                 tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.black));
             }
 
@@ -301,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     //TODO find out a better way to hack this
     private boolean areSeekBarInitialized() {
         if (tvSpeed.getText().equals("TextView") || tvISO.getText().equals("TextView")
-                || tvISOND.getText().equals("TextView")) {
+                || tvISOND.getText().equals("TextView") || tvStopsND.getText().equals("TextView")) {
             Log.e(TAG, "tvSpeed text is TextView...");
             return false;
         }
