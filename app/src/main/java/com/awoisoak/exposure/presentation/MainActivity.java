@@ -12,8 +12,6 @@ import com.awoisoak.exposure.R;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-//TODO there are cameras with electronic shutters that reach til 1/32000s (there are some) add
-// them to the string array?
 //TODO make functions for all the parsing/splits in the code?
 //TODO Same for the ISO, cameras like sony a7s have higher values
 //TODO add a method to remove X.0 values
@@ -26,7 +24,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final float MAX_SPEED =  1f / 8000f;
+    private static final float MAX_SPEED = 1f / 8000f;
+    private static final float MAX_SPEED_ALLOWED_GAP = 0.00002125f;
 
 
     @BindView(R.id.tv_aperture)
@@ -151,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         float t = parseSpeed((String) tvSpeed.getText());
         float ISO = Float.parseFloat(((String) tvISO.getText()));
         float EV = (float) ((Math.log(N * N) / Math.log(2)) + (Math.log(1 / t) / Math.log(2)) -
-                        (Math.log(ISO / 100) / Math.log(2)));
+                (Math.log(ISO / 100) / Math.log(2)));
         //We only want to display 1 digit
         String tmp = String.format("EV = %.1f", EV);
         tv_EV.setText(tmp);
@@ -215,18 +214,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     /**
      * Format the final shutter speed to display to the user properly
      */
-    private String formatSpeed(float unformattedSpeed) {
-        if (unformattedSpeed < MAX_SPEED) {
-            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
-            //TODO add some text explaining the situation to the user
-        } else {
-            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.black));
-        }
+    private String formatSpeed(float uSpeed) {
 
+        checkMaxSpeed(uSpeed);
 
-        int hours = (int) (unformattedSpeed / 3600);
-        int minutes = (int) (unformattedSpeed % 3600) / 60;
-        float seconds = unformattedSpeed % 60;
+        int hours = (int) (uSpeed / 3600);
+        int minutes = (int) (uSpeed % 3600) / 60;
+        float seconds = uSpeed % 60;
 
         String minutesToDisplay = String.valueOf(minutes);
         String hoursToDisplay = String.valueOf(hours);
@@ -241,8 +235,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         if (fraction == 0.0) {
             hoursToDisplay = hoursToDisplay.split("\\.")[0];
         }
-
-
 
 
         /*
@@ -277,11 +269,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
 
 
-
-
-
-
-
         String speed;
         if (minutes < 1 && hours < 1) {
             speed = secondsToDisplay;
@@ -298,6 +285,24 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Log.d(TAG, "formatted speed = " + speed);
         return speed;
     }
+    /**
+     * We need to figure out when the final speed is lower than 1/8000 to set it as red
+     * (cameras are normally not that fast)
+     *
+     * There are some tricky cases when the speed is just a bit more than 1/8000 by some decimals so we consider that speed correct
+     *
+     * If the speed is too far from the 1/8000 value (meaning it's closer to an
+     * impossible speed for the camera) we will set the text to red
+     *
+     */
+    private void checkMaxSpeed(float uSpeed) {
+        if ((uSpeed < MAX_SPEED) && (MAX_SPEED - uSpeed > MAX_SPEED_ALLOWED_GAP)) {
+            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
+            //TODO add some text explaining the situation to the user
+        } else {
+            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.black));
+        }
+    }
 
     /**
      * Seems like the Seekbars are triggering the events right away they are created.
@@ -313,16 +318,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         return true;
     }
 
-
-//    //TODO try this formula?
-//    https://photo.stackexchange.com/questions/89563/is-there-a-formula-to-calculate-iso
-// -according-to-shutter-speed
-//    Mathematically, you can calculate it all via:
-//
-//    sISO = ln(ISO / 100) / ln(2)
-//    sAperture = -ln(Aperture) / ln(√2)
-//    sShutter = EV + sISO + sAperture
-//    Shutter speed = 2-sShutter
 
     /**
      * Convert the speed values into 'real' Double numbers
