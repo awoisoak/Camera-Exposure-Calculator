@@ -4,21 +4,22 @@ package com.awoisoak.exposure.presentation;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.awoisoak.exposure.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 //TODO make functions for all the parsing/splits in the code?
-//TODO Same for the ISO, cameras like sony a7s have higher values
-//TODO add a method to remove X.0 values
 //TODO apply blue instead pink
-//TODO when everything work try to use float instead of double
 //TODO add a ViewModel and implement calls to onsaveinstance...?
-//TODO disable landscape mode
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
 
@@ -63,10 +64,17 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     @BindView(R.id.tv_final_shutter_speed)
     TextView tv_final_sutther_speed;
 
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
+    @BindView(R.id.button)
+    Button button;
+
+
     String[] apertureValues;
     String[] speedValues;
     String[] ISOValues;
     String[] StopsValues;
+    private float finalShutterSpeed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,13 +194,27 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Log.d(TAG, "apertureND = " + apertureND);
         Log.d(TAG, "ISO_ND = " + ISO_ND);
 
-        float shutterSpeed = (float) ((100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV)));
-        Log.d(TAG, "speed =  " + shutterSpeed);
-        shutterSpeed = calculateSpeedWithNDFilterAdded(shutterSpeed,
+        finalShutterSpeed = (float) ((100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV)));
+        Log.d(TAG, "speed =  " + finalShutterSpeed);
+        finalShutterSpeed = calculateSpeedWithNDFilterAdded(finalShutterSpeed,
                 (Float.valueOf(((String) tvStopsND.getText()).split("-")[0])));
-        tv_final_sutther_speed.setText(formatSpeed(shutterSpeed));
-        Log.d(TAG, "speed ND=  " + shutterSpeed);
+        checkIfChronometerShouldBeDisplayed(finalShutterSpeed);
+        tv_final_sutther_speed.setText(formatSpeed(finalShutterSpeed));
+        Log.d(TAG, "speed ND=  " + finalShutterSpeed);
         System.out.println("__________________________");
+    }
+
+    /**
+     * Display Chronometer (button & progress bar) if the final shutter speed is longer than X
+     */
+    private void checkIfChronometerShouldBeDisplayed(float finalShutterSpeed) {
+        if (finalShutterSpeed > 1.5) {
+            progressBar.setVisibility(View.VISIBLE);
+            button.setVisibility(View.VISIBLE);
+        } else {
+            button.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.INVISIBLE);
+        }
     }
 
     /**
@@ -214,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     /**
      * Format the final shutter speed to display to the user properly
      */
-    private String formatSpeed(float uSpeed) {
+    String formatSpeed(float uSpeed) {
 
         checkMaxSpeed(uSpeed);
 
@@ -241,7 +263,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Seconds formatting are more tricky as per speed under 1s we will need all possible digits
          */
         String secondsToDisplay;
-        if (hours >= 1 || minutes >= 1 || seconds > 30) {//Longer shutter speed than 30s
+        if (uSpeed == 0) {//TODO needed?
+            secondsToDisplay = "0s";
+        } else if (hours >= 1 || minutes >= 1 || seconds > 30) {//Longer shutter speed than 30s
             seconds = (float) (StrictMath.round(seconds * 10.0) / 10.0);
             secondsToDisplay = String.valueOf(seconds) + "s";
 
@@ -285,15 +309,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Log.d(TAG, "formatted speed = " + speed);
         return speed;
     }
+
     /**
      * We need to figure out when the final speed is lower than 1/8000 to set it as red
      * (cameras are normally not that fast)
      *
-     * There are some tricky cases when the speed is just a bit more than 1/8000 by some decimals so we consider that speed correct
+     * There are some tricky cases when the speed is just a bit more than 1/8000 by some decimals so
+     * we consider that speed correct
      *
      * If the speed is too far from the 1/8000 value (meaning it's closer to an
      * impossible speed for the camera) we will set the text to red
-     *
      */
     private void checkMaxSpeed(float uSpeed) {
         if ((uSpeed < MAX_SPEED) && (MAX_SPEED - uSpeed > MAX_SPEED_ALLOWED_GAP)) {
@@ -331,6 +356,41 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         return Float.parseFloat(tmp);
     }
 
+
+    @OnClick(R.id.button)
+    void submit() {
+        String status = (String) button.getText();
+        switch (status) {
+            case "Start":
+                button.setText("Stop");
+                progressBar.setMax((int) finalShutterSpeed);
+                progressBar.setProgress(0);
+                new ChronometerAsyncTask(this).execute(finalShutterSpeed % 60);
+                break;
+            case "Stop":
+                button.setText("Start");
+                progressBar.setMax((int) finalShutterSpeed);
+                progressBar.setProgress(0);
+                new ChronometerAsyncTask(this).cancel(false);
+                break;
+
+            default:
+                Log.e(TAG, "The button is in unknown status");
+        }
+    }
+
+
+    /**
+     * Method to access to the finalShutterSpeed from the Asynctask
+     */
+    public float getFinalShutterSpeed() {
+        System.out.println("awooo |getFinalShutterSpeed =  " + finalShutterSpeed);
+        System.out.println("awooo |getFinalShutterSpeed % 60 =  " + finalShutterSpeed % 60);
+        System.out.println(
+                "awooo |getFinalShutterSpeed Math.round(finalShutterSpeed) =  " + Math.round(
+                        finalShutterSpeed));
+        return Math.round(finalShutterSpeed);
+    }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
