@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.awoisoak.exposure.R;
 
@@ -69,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     @BindView(R.id.button)
     Button button;
 
+    @BindView(R.id.tv_big_chronometer)
+    TextView tv_big_chronometer;
+
 
     String[] apertureValues;
     String[] speedValues;
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initializeValues();
-        initializeSeekBars();
+        initializeViews();
     }
 
     private void initializeValues() {
@@ -92,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         StopsValues = getResources().getStringArray(R.array.stops);
     }
 
-    private void initializeSeekBars() {
+    private void initializeViews() {
         seekBarAperture.setOnSeekBarChangeListener(this);
         seekBarApertureND.setOnSeekBarChangeListener(this);
         seekBarSpeed.setOnSeekBarChangeListener(this);
@@ -106,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         seekBarISO.setMax(ISOValues.length - 1);
         seekBarISOND.setMax(ISOValues.length - 1);
         seekBarStopsND.setMax(StopsValues.length - 1);
+
+        tv_big_chronometer.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
 
@@ -205,15 +210,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     /**
-     * Display Chronometer (button & progress bar) if the final shutter speed is longer than X
+     * Display Chronometer (button if the final shutter speed is longer than 1.5s
      */
     private void checkIfChronometerShouldBeDisplayed(float finalShutterSpeed) {
         if (finalShutterSpeed > 1.5) {
-            progressBar.setVisibility(View.VISIBLE);
             button.setVisibility(View.VISIBLE);
         } else {
             button.setVisibility(View.INVISIBLE);
-            progressBar.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -365,12 +368,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 button.setText("Stop");
                 progressBar.setMax((int) finalShutterSpeed);
                 progressBar.setProgress(0);
+                tv_big_chronometer.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
                 new ChronometerAsyncTask(this).execute(finalShutterSpeed % 60);
                 break;
             case "Stop":
                 button.setText("Start");
                 progressBar.setMax((int) finalShutterSpeed);
                 progressBar.setProgress(0);
+                tv_big_chronometer.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
                 new ChronometerAsyncTask(this).cancel(false);
                 break;
 
@@ -384,11 +391,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * Method to access to the finalShutterSpeed from the Asynctask
      */
     public float getFinalShutterSpeed() {
-        System.out.println("awooo |getFinalShutterSpeed =  " + finalShutterSpeed);
-        System.out.println("awooo |getFinalShutterSpeed % 60 =  " + finalShutterSpeed % 60);
-        System.out.println(
-                "awooo |getFinalShutterSpeed Math.round(finalShutterSpeed) =  " + Math.round(
-                        finalShutterSpeed));
         return Math.round(finalShutterSpeed);
     }
 

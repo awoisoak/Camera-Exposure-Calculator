@@ -21,6 +21,7 @@ public class ChronometerAsyncTask extends AsyncTask {
     private WeakReference<ProgressBar> progressBar;
     private WeakReference<Button> button;
     private WeakReference<MainActivity> mActivity;
+    private WeakReference<TextView> tv_big_chronometer;
     private static CountDownTimer countdown;
     private boolean countdownFinished;
 
@@ -30,6 +31,8 @@ public class ChronometerAsyncTask extends AsyncTask {
         tv_final_sutther_speed = new WeakReference<>(
                 (TextView) activity.findViewById(R.id.tv_final_shutter_speed));
         button = new WeakReference<>((Button) activity.findViewById(R.id.button));
+        tv_big_chronometer = new WeakReference<>(
+                (TextView) activity.findViewById(R.id.tv_big_chronometer));
     }
 
     @Override
@@ -59,7 +62,7 @@ public class ChronometerAsyncTask extends AsyncTask {
         if (areWeakReferencesValid()) {
             int progress = (int) (long) values[0];
             int timeLeft = (int) values[1];
-            tv_final_sutther_speed.get().setText(String.valueOf(timeLeft));
+            tv_big_chronometer.get().setText(String.valueOf(timeLeft));
             progressBar.get().setProgress(progress);
         }
     }
@@ -68,7 +71,7 @@ public class ChronometerAsyncTask extends AsyncTask {
     protected void onPostExecute(Object o) {
         super.onPostExecute(o);
         if (countdownFinished && areWeakReferencesValid()) {
-            tv_final_sutther_speed.get().setText("Done! Nice pic! :)");
+            button.get().setText("Start");
             progressBar.get().setProgress(0);
             setViewsEnabled(true);
         }
@@ -78,6 +81,7 @@ public class ChronometerAsyncTask extends AsyncTask {
     protected void onPreExecute() {
         super.onPreExecute();
         if (areWeakReferencesValid()) {
+            countdownFinished = false;
             setViewsEnabled(false);
             final long uSpeed = (long) mActivity.get().getFinalShutterSpeed();
             final Object[] params = new Object[2];
@@ -109,27 +113,31 @@ public class ChronometerAsyncTask extends AsyncTask {
             ConstraintLayout layout = mActivity.get().findViewById(R.id.constraint_layout);
             for (int i = 0; i < layout.getChildCount(); i++) {
                 View child = layout.getChildAt(i);
-                    child.setEnabled(enable);
-                    if (enable){
-                        child.setAlpha(1f);
-                    }else{
-                        child.setAlpha(0.3f);
-                    }
+                child.setEnabled(enable);
+                if (enable) {
+                    child.setAlpha(1f);
+                } else {
+                    child.setAlpha(0.05f);
+                }
             }
-            tv_final_sutther_speed.get().setEnabled(true);
-            tv_final_sutther_speed.get().setAlpha(1f);
-            progressBar.get().setEnabled(true);
-            progressBar.get().setAlpha(1f);
             button.get().setEnabled(true);
             button.get().setAlpha(1f);
+            progressBar.get().setEnabled(true);
+            progressBar.get().setAlpha(1f);
+            tv_big_chronometer.get().setEnabled(true);
+            tv_big_chronometer.get().setAlpha(1f);
+
+            progressBar.get().setVisibility(enable?View.INVISIBLE:View.VISIBLE);
+            tv_big_chronometer.get().setVisibility(enable?View.INVISIBLE:View.VISIBLE);
+            tv_final_sutther_speed.get().setVisibility(enable?View.VISIBLE:View.INVISIBLE);
+
         }
     }
 
 
-
     private boolean areWeakReferencesValid() {
         if (mActivity.get() != null && tv_final_sutther_speed.get() != null
-                && progressBar.get() != null && button.get() != null) {
+                && progressBar.get() != null && button.get() != null && tv_big_chronometer.get()!=null) {
             return true;
         } else {
             return false;
