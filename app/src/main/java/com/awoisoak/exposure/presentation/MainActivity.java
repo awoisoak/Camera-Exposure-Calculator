@@ -1,8 +1,9 @@
 package com.awoisoak.exposure.presentation;
 
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,9 +17,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-//TODO make functions for all the parsing/splits in the code?
-//TODO apply blue instead pink
-//TODO add a ViewModel and implement calls to onsaveinstance...?
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
 
@@ -77,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     String[] ISOValues;
     String[] StopsValues;
     private float finalShutterSpeed;
+    private Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,19 +193,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Float apertureND = Float.parseFloat(((String) tvApertureND.getText()).split("f/")[1]);
         Float ISO_ND = Float.parseFloat(((String) tvISOND.getText()));
         Float EV = calculateEVWithISO();
-        System.out.println("__________________________");
-        Log.d(TAG, "EV = " + EV);
-        Log.d(TAG, "apertureND = " + apertureND);
-        Log.d(TAG, "ISO_ND = " + ISO_ND);
-
         finalShutterSpeed = (float) ((100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV)));
-        Log.d(TAG, "speed =  " + finalShutterSpeed);
         finalShutterSpeed = calculateSpeedWithNDFilterAdded(finalShutterSpeed,
                 (Float.valueOf(((String) tvStopsND.getText()).split("-")[0])));
         checkIfChronometerShouldBeDisplayed(finalShutterSpeed);
         tv_final_sutther_speed.setText(formatSpeed(finalShutterSpeed));
         Log.d(TAG, "speed ND=  " + finalShutterSpeed);
-        System.out.println("__________________________");
     }
 
     /**
@@ -266,9 +258,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Seconds formatting are more tricky as per speed under 1s we will need all possible digits
          */
         String secondsToDisplay;
-        if (uSpeed == 0) {//TODO needed?
-            secondsToDisplay = "0s";
-        } else if (hours >= 1 || minutes >= 1 || seconds > 30) {//Longer shutter speed than 30s
+
+        if (hours >= 1 || minutes >= 1 || seconds > 30) {//Longer shutter speed than 30s
             seconds = (float) (StrictMath.round(seconds * 10.0) / 10.0);
             secondsToDisplay = String.valueOf(seconds) + "s";
 
@@ -278,7 +269,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 secondsToDisplay = secondsToDisplay.split("\\.")[0] + "s";
             }
         } else { //Less than 30s
-
             float min = 30;
             int index = -1;
             float diff;
@@ -291,7 +281,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                     break;
                 }
             }
-
             secondsToDisplay = String.valueOf((speedValues[index]));
         }
 
@@ -317,18 +306,28 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * We need to figure out when the final speed is lower than 1/8000 to set it as red
      * (cameras are normally not that fast)
      *
-     * There are some tricky cases when the speed is just a bit more than 1/8000 by some decimals so
+     * There are some tricky cases when the speed is just a bit more than 1/8000 by some decimals
+     * so
      * we consider that speed correct
      *
      * If the speed is too far from the 1/8000 value (meaning it's closer to an
-     * impossible speed for the camera) we will set the text to red
+     * impossible speed for the camera) we will set the text to red and display a snackbar
+     * explaining the problem to the user
      */
     private void checkMaxSpeed(float uSpeed) {
         if ((uSpeed < MAX_SPEED) && (MAX_SPEED - uSpeed > MAX_SPEED_ALLOWED_GAP)) {
             tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
-            //TODO add some text explaining the situation to the user
+
+            if (snackbar == null || !snackbar.isShown()) {
+                snackbar = Snackbar.make(findViewById(R.id.constraint_layout),
+                        R.string.maximum_shutter_speed_explanation, Snackbar.LENGTH_INDEFINITE);
+                snackbar.show();
+            }
         } else {
-            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.black));
+            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            if (snackbar != null && snackbar.isShown()) {
+                snackbar.dismiss();
+            }
         }
     }
 

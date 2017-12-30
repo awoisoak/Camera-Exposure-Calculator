@@ -124,10 +124,12 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
         android:text="2m 30s"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/tv_nd_stops"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_nd_stops"/>
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -214,6 +216,9 @@
         android:layout_marginRight="16dp"/>
     <Button
         android:id="@+id/button"
+        style="@style/Base.TextAppearance.AppCompat.Widget.Button.Colored"
+        android:background="@drawable/rounded_button"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -227,7 +232,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp" android:layout_marginStart="8dp"
         android:layout_marginTop="160dp"
-        android:textColor="@color/black"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="100dp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"

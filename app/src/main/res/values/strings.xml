@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Exposure</string>
+    <string name="maximum_shutter_speed_explanation">You reached the maximum shutter speed supported
+        by most cameras!
+    </string>
 
     <string-array name="apertures">
         <item>1.0</item>
