@@ -1,11 +1,14 @@
 package com.awoisoak.exposure.presentation;
 
 
+import android.animation.ObjectAnimator;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
@@ -16,7 +19,9 @@ import com.awoisoak.exposure.R;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
+//TODO add maximum value to the time the shutter can be opened (big values do not fit the screen and what is worse the animation crashes)
+//TODO save button status with tags instead of texts (otherwise it won't work with other language)
+//TODO add property activity with the explanation of EV and all the formulas?
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
 
@@ -365,8 +370,18 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         switch (status) {
             case "Start":
                 button.setText("Stop");
-                progressBar.setMax((int) finalShutterSpeed);
+                //* 100 for the animation to be smoothie
+                progressBar.setMax(Math.round(finalShutterSpeed) * 100);
                 progressBar.setProgress(0);
+                ObjectAnimator animation = ObjectAnimator.ofInt(progressBar, "progress", 0,
+                        progressBar.getMax());
+                long animationDuration = (long) (Math.round(finalShutterSpeed) * 1000);
+                System.out.println("awoo animationDuration=" + animationDuration);
+                animation.setDuration(animationDuration);
+
+                animation.setInterpolator(new LinearInterpolator());
+                animation.start();
+                /////
                 tv_big_chronometer.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.VISIBLE);
                 new ChronometerAsyncTask(this).execute(finalShutterSpeed % 60);
