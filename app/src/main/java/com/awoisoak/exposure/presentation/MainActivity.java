@@ -7,7 +7,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -19,9 +18,13 @@ import com.awoisoak.exposure.R;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-//TODO add maximum value to the time the shutter can be opened (big values do not fit the screen and what is worse the animation crashes)
+
 //TODO save button status with tags instead of texts (otherwise it won't work with other language)
 //TODO add property activity with the explanation of EV and all the formulas?
+
+/**
+ * Only activity in the app to display controls and different values to the user
+ */
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
 
@@ -29,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     private static final float MAX_SPEED = 1f / 8000f;
     private static final float MAX_SPEED_ALLOWED_GAP = 0.00002125f;
-
+    private static final float MAX_EXPOSURE_VALUE = 7 * 24 * 60 * 60;
 
     @BindView(R.id.tv_aperture)
     TextView tvAperture;
@@ -201,21 +204,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         finalShutterSpeed = (float) ((100 * Math.pow(apertureND, 2)) / (ISO_ND * Math.pow(2, EV)));
         finalShutterSpeed = calculateSpeedWithNDFilterAdded(finalShutterSpeed,
                 (Float.valueOf(((String) tvStopsND.getText()).split("-")[0])));
-        checkIfChronometerShouldBeDisplayed(finalShutterSpeed);
         tv_final_sutther_speed.setText(formatSpeed(finalShutterSpeed));
         Log.d(TAG, "speed ND=  " + finalShutterSpeed);
     }
 
-    /**
-     * Display Chronometer (button if the final shutter speed is longer than 1.5s
-     */
-    private void checkIfChronometerShouldBeDisplayed(float finalShutterSpeed) {
-        if (finalShutterSpeed > 1.5) {
-            button.setVisibility(View.VISIBLE);
-        } else {
-            button.setVisibility(View.INVISIBLE);
-        }
-    }
 
     /**
      * Given an original speed and the Stop value of the attached NF filter, it calculates the final
@@ -230,20 +222,23 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * - Tnd is the final exposure time
      */
     private float calculateSpeedWithNDFilterAdded(float originalSpeed, float stopValue) {
-        return (float) (originalSpeed * Math.pow(2, stopValue));
+        return (float) Math.abs(originalSpeed * Math.pow(2, stopValue));
     }
 
     /**
      * Format the final shutter speed to display to the user properly
      */
     String formatSpeed(float uSpeed) {
-
-        checkMaxSpeed(uSpeed);
+        checkThresholds(uSpeed);
+        boolean tooFastToBeDisplayed = false;
 
         int hours = (int) (uSpeed / 3600);
         int minutes = (int) (uSpeed % 3600) / 60;
         float seconds = uSpeed % 60;
 
+        if (uSpeed / 3600 > Integer.MAX_VALUE) {
+            tooFastToBeDisplayed = true;
+        }
         String minutesToDisplay = String.valueOf(minutes);
         String hoursToDisplay = String.valueOf(hours);
 
@@ -263,7 +258,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Seconds formatting are more tricky as per speed under 1s we will need all possible digits
          */
         String secondsToDisplay;
-
         if (hours >= 1 || minutes >= 1 || seconds > 30) {//Longer shutter speed than 30s
             seconds = (float) (StrictMath.round(seconds * 10.0) / 10.0);
             secondsToDisplay = String.valueOf(seconds) + "s";
@@ -291,7 +285,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
         String speed;
-        if (minutes < 1 && hours < 1) {
+
+        if (tooFastToBeDisplayed) {
+            speed = "Excessive exposure";
+        } else if (minutes < 1 && hours < 1) {
             speed = secondsToDisplay;
         } else if (minutes >= 1 && hours <= 0) {
             if (minutes < 10) {
@@ -308,31 +305,38 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     /**
-     * We need to figure out when the final speed is lower than 1/8000 to set it as red
-     * (cameras are normally not that fast)
+     * Method to calculate whether the shutter speed is too fast or too slow:
      *
-     * There are some tricky cases when the speed is just a bit more than 1/8000 by some decimals
-     * so
-     * we consider that speed correct
+     * - If the final speed is lower than 1/8000 to set it as red (cameras are normally not that
+     * fast). There are some tricky cases when the speed is just a bit more than 1/8000 by some
+     * decimals so  we consider that speed correct.If the speed is too far from the 1/8000 value
+     * (meaning it's closer to an impossible speed for the camera) we will set the text to red and
+     * display a snackbar explaining the problem to the user
      *
-     * If the speed is too far from the 1/8000 value (meaning it's closer to an
-     * impossible speed for the camera) we will set the text to red and display a snackbar
-     * explaining the problem to the user
+     * - On the other hand, if the shutter speed is too slow (super long exposure value) many
+     * cameras can not support it
+     * I couldn't find the specific max bulb mode time for many popular cameras so I will just
+     * setup
+     * a random max value (long enough for any 'normal' use)
+     *
+     * Besides that, we will hide the Chronometer button when the final speed is lower than 1.5s as it's kind of useless
      */
-    private void checkMaxSpeed(float uSpeed) {
+    private void checkThresholds(float uSpeed) {
         if ((uSpeed < MAX_SPEED) && (MAX_SPEED - uSpeed > MAX_SPEED_ALLOWED_GAP)) {
             tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
-
-            if (snackbar == null || !snackbar.isShown()) {
-                snackbar = Snackbar.make(findViewById(R.id.constraint_layout),
-                        R.string.maximum_shutter_speed_explanation, Snackbar.LENGTH_INDEFINITE);
-                snackbar.show();
-            }
-        } else {
+            displaySnackbar(R.string.maximum_shutter_speed_explanation);
+        } else if ((uSpeed > MAX_EXPOSURE_VALUE)) {
+            button.setVisibility(View.INVISIBLE);
+            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
+            displaySnackbar(R.string.maximum_exposure_time_explanation);
+        } else if (uSpeed < 1.5) {
+            button.setVisibility(View.INVISIBLE);
             tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
-            if (snackbar != null && snackbar.isShown()) {
-                snackbar.dismiss();
-            }
+            hideSnackbar();
+        } else {
+            button.setVisibility(View.VISIBLE);
+            tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            hideSnackbar();
         }
     }
 
@@ -370,18 +374,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         switch (status) {
             case "Start":
                 button.setText("Stop");
-                //* 100 for the animation to be smoothie
+                //multiply by 100 for the animation to be smoothie
                 progressBar.setMax(Math.round(finalShutterSpeed) * 100);
                 progressBar.setProgress(0);
                 ObjectAnimator animation = ObjectAnimator.ofInt(progressBar, "progress", 0,
                         progressBar.getMax());
-                long animationDuration = (long) (Math.round(finalShutterSpeed) * 1000);
+                long animationDuration = (long) Math.abs(Math.round(finalShutterSpeed) * 1000);
                 System.out.println("awoo animationDuration=" + animationDuration);
                 animation.setDuration(animationDuration);
-
                 animation.setInterpolator(new LinearInterpolator());
                 animation.start();
-                /////
                 tv_big_chronometer.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.VISIBLE);
                 new ChronometerAsyncTask(this).execute(finalShutterSpeed % 60);
@@ -406,6 +408,27 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      */
     public float getFinalShutterSpeed() {
         return Math.round(finalShutterSpeed);
+    }
+
+
+    /**
+     * Display Snackbar (if there is not one in the screen already) with the passed message
+     */
+    private void displaySnackbar(int messageId) {
+        if (snackbar == null || !snackbar.isShown()) {
+            snackbar = Snackbar.make(findViewById(R.id.constraint_layout),
+                    messageId, Snackbar.LENGTH_INDEFINITE);
+            snackbar.show();
+        }
+    }
+
+    /**
+     * Hide snackbar if it's being displayed
+     */
+    private void hideSnackbar() {
+        if (snackbar != null && snackbar.isShown()) {
+            snackbar.dismiss();
+        }
     }
 
     @Override

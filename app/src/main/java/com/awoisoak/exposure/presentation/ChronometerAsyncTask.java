@@ -12,12 +12,12 @@ import com.awoisoak.exposure.R;
 
 import java.lang.ref.WeakReference;
 
-
 /**
- * Created by awo on 12/29/17.
+ * AsyncTask implementing the chronometer and managing the different views through WeakReferences to
+ * avoid leaks
  */
 public class ChronometerAsyncTask extends AsyncTask {
-    private WeakReference<TextView> tv_final_sutther_speed;
+    private WeakReference<TextView> tv_final_shutter_speed;
     private WeakReference<ProgressBar> progressBar;
     private WeakReference<Button> button;
     private WeakReference<MainActivity> mActivity;
@@ -28,7 +28,7 @@ public class ChronometerAsyncTask extends AsyncTask {
     public ChronometerAsyncTask(MainActivity activity) {
         mActivity = new WeakReference<>(activity);
         progressBar = new WeakReference<>((ProgressBar) activity.findViewById(R.id.progressBar));
-        tv_final_sutther_speed = new WeakReference<>(
+        tv_final_shutter_speed = new WeakReference<>(
                 (TextView) activity.findViewById(R.id.tv_final_shutter_speed));
         button = new WeakReference<>((Button) activity.findViewById(R.id.button));
         tv_big_chronometer = new WeakReference<>(
@@ -47,7 +47,7 @@ public class ChronometerAsyncTask extends AsyncTask {
         if (areWeakReferencesValid()) {
             countdown.cancel();
             setViewsEnabled(true);
-            tv_final_sutther_speed.get().setText(
+            tv_final_shutter_speed.get().setText(
                     String.valueOf(mActivity.get().getFinalShutterSpeed()));
         }
     }
@@ -100,8 +100,15 @@ public class ChronometerAsyncTask extends AsyncTask {
 
                 @Override
                 public void onFinish() {
+                    System.out.println("CountDownTimer | onFinish | Thread name=  "+Thread.currentThread().getName() +" id ="+Thread.currentThread().getId());
                     countdownFinished = true;
-                    onPostExecute(new Object());
+                    //When we call to onPostExecute manually, it has to run in the UI thread
+                    mActivity.get().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            onPostExecute(new Object());
+                        }
+                    });
                 }
             };
         }
@@ -127,17 +134,18 @@ public class ChronometerAsyncTask extends AsyncTask {
             tv_big_chronometer.get().setEnabled(true);
             tv_big_chronometer.get().setAlpha(1f);
 
-            progressBar.get().setVisibility(enable?View.INVISIBLE:View.VISIBLE);
-            tv_big_chronometer.get().setVisibility(enable?View.INVISIBLE:View.VISIBLE);
-            tv_final_sutther_speed.get().setVisibility(enable?View.VISIBLE:View.INVISIBLE);
+            progressBar.get().setVisibility(enable ? View.INVISIBLE : View.VISIBLE);
+            tv_big_chronometer.get().setVisibility(enable ? View.INVISIBLE : View.VISIBLE);
+            tv_final_shutter_speed.get().setVisibility(enable ? View.VISIBLE : View.INVISIBLE);
 
         }
     }
 
 
     private boolean areWeakReferencesValid() {
-        if (mActivity.get() != null && tv_final_sutther_speed.get() != null
-                && progressBar.get() != null && button.get() != null && tv_big_chronometer.get()!=null) {
+        if (mActivity.get() != null && tv_final_shutter_speed.get() != null
+                && progressBar.get() != null && button.get() != null
+                && tv_big_chronometer.get() != null) {
             return true;
         } else {
             return false;
