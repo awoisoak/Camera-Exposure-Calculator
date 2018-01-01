@@ -124,7 +124,7 @@ public class ChronometerAsyncTask extends AsyncTask {
                 if (enable) {
                     child.setAlpha(1f);
                 } else {
-                    child.setAlpha(0.05f);
+                    child.setAlpha(0f);
                 }
             }
             button.get().setEnabled(true);

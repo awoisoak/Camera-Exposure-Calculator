@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Exposure</string>
+    <string name="app_name">Camera Exposure Calculator</string>
     <string name="maximum_shutter_speed_explanation">You reached the maximum shutter speed supported
         by most cameras
     </string>
