@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private static final float MAX_SPEED = 1f / 8000f;
     private static final float MAX_SPEED_ALLOWED_GAP = 0.00002125f;
     private static final float MAX_EXPOSURE_VALUE = 7 * 24 * 60 * 60;
+    private static final float MIN_CHRONOMETER_SPEED = 3.8f;
 
     @BindView(R.id.tv_aperture)
     TextView tvAperture;
@@ -319,7 +320,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * setup
      * a random max value (long enough for any 'normal' use)
      *
-     * Besides that, we will hide the Chronometer button when the final speed is lower than 1.5s as it's kind of useless
+     * Besides that, we will hide the Chronometer button when the final speed is lower than {MIN_CHRONOMETER_SPEED} as
+     * it's kind of useless
      */
     private void checkThresholds(float uSpeed) {
         if ((uSpeed < MAX_SPEED) && (MAX_SPEED - uSpeed > MAX_SPEED_ALLOWED_GAP)) {
@@ -329,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             button.setVisibility(View.INVISIBLE);
             tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.red));
             displaySnackbar(R.string.maximum_exposure_time_explanation);
-        } else if (uSpeed < 1.5) {
+        } else if (uSpeed < MIN_CHRONOMETER_SPEED) {
             button.setVisibility(View.INVISIBLE);
             tv_final_sutther_speed.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             hideSnackbar();
@@ -404,10 +406,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
     /**
-     * Method to access to the finalShutterSpeed from the Asynctask
+     * Method to access to the finalShutterSpeed from the AsyncTask
+     * @param rounded if true, the value will be automatically rounded
      */
-    public float getFinalShutterSpeed() {
-        return Math.round(finalShutterSpeed);
+    public float getFinalShutterSpeed(boolean rounded) {
+        return rounded ? Math.round(finalShutterSpeed) : finalShutterSpeed;
+
     }
 
 

@@ -48,7 +48,8 @@ public class ChronometerAsyncTask extends AsyncTask {
             countdown.cancel();
             setViewsEnabled(true);
             tv_final_shutter_speed.get().setText(
-                    String.valueOf(mActivity.get().getFinalShutterSpeed()));
+                    String.valueOf(mActivity.get().formatSpeed(
+                            mActivity.get().getFinalShutterSpeed(false))));
         }
     }
 
@@ -60,8 +61,8 @@ public class ChronometerAsyncTask extends AsyncTask {
     protected void onProgressUpdate(Object[] values) {
         super.onProgressUpdate(values);
         if (areWeakReferencesValid()) {
-            int progress = (int) (long) values[0];
-            int timeLeft = (int) values[1];
+            int progress = (int) values[0];
+            int timeLeft = (int) (float) values[1];
             tv_big_chronometer.get().setText(String.valueOf(timeLeft));
             progressBar.get().setProgress(progress);
         }
@@ -83,16 +84,17 @@ public class ChronometerAsyncTask extends AsyncTask {
         if (areWeakReferencesValid()) {
             countdownFinished = false;
             setViewsEnabled(false);
-            final long uSpeed = (long) mActivity.get().getFinalShutterSpeed();
+            final float uSpeed = mActivity.get().getFinalShutterSpeed(true);
             final Object[] params = new Object[2];
-            countdown = new CountDownTimer(uSpeed * 1000, 1000) {
-                long progress = 0;
-                int timeLeft = (int) uSpeed;
+            countdown = new CountDownTimer((long) (uSpeed * 1000), 1000) {
+                int progress = -1;
+                float timeLeft = uSpeed + 1;
 
                 @Override
                 public void onTick(long l) {
                     progress = progress + 1;
                     timeLeft = timeLeft - 1;
+
                     params[0] = progress;
                     params[1] = timeLeft;
                     publishProgress(params);
@@ -100,7 +102,6 @@ public class ChronometerAsyncTask extends AsyncTask {
 
                 @Override
                 public void onFinish() {
-                    System.out.println("CountDownTimer | onFinish | Thread name=  "+Thread.currentThread().getName() +" id ="+Thread.currentThread().getId());
                     countdownFinished = true;
                     //When we call to onPostExecute manually, it has to run in the UI thread
                     mActivity.get().runOnUiThread(new Runnable() {
