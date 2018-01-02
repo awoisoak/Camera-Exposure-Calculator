@@ -7,7 +7,7 @@
 /build
 /captures
 .externalNativeBuild
-/release
+/app/release
 
 # Android Studio
 .idea/
