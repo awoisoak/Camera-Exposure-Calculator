@@ -86,15 +86,15 @@ public class ChronometerAsyncTask extends AsyncTask {
             setViewsEnabled(false);
             final float uSpeed = mActivity.get().getFinalShutterSpeed(true);
             final Object[] params = new Object[2];
-            countdown = new CountDownTimer((long) (uSpeed * 1000), 1000) {
+            countdown = new CountDownTimer((long) (uSpeed * 1000)+1000, 1000) {
                 int progress = -1;
                 float timeLeft = uSpeed + 1;
+
 
                 @Override
                 public void onTick(long l) {
                     progress = progress + 1;
                     timeLeft = timeLeft - 1;
-
                     params[0] = progress;
                     params[1] = timeLeft;
                     publishProgress(params);
