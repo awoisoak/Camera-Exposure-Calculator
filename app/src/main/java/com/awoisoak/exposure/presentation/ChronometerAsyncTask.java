@@ -75,6 +75,8 @@ public class ChronometerAsyncTask extends AsyncTask {
             button.get().setText("Start");
             progressBar.get().setProgress(0);
             setViewsEnabled(true);
+            mActivity.get().asyncTask =null;
+
         }
     }
 
@@ -157,5 +159,9 @@ public class ChronometerAsyncTask extends AsyncTask {
         } else {
             return false;
         }
+    }
+
+    public boolean isCountdownFinished(){
+        return countdownFinished;
     }
 }

@@ -4,12 +4,10 @@ package com.awoisoak.exposure.presentation;
 import android.animation.ObjectAnimator;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -99,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private float finalShutterSpeed;
     private Snackbar snackbar;
     private int themeToApply;
-    private AsyncTask asynctask;
+     ChronometerAsyncTask asyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (asynctask == null || asynctask.isCancelled()) {
+        if (asyncTask == null || asyncTask.isCountdownFinished()) {
             getMenuInflater().inflate(R.menu.main, menu);
 
         } else {
@@ -432,28 +430,31 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         String status = (String) button.getText();
         switch (status) {
             case "Start":
-                button.setText("Stop");
-                //multiply by 100 for the animation to be smoothie
-                progressBar.setMax(Math.round(finalShutterSpeed) * 100);
-                progressBar.setProgress(0);
-                ObjectAnimator animation = ObjectAnimator.ofInt(progressBar, "progress", 0,
-                        progressBar.getMax());
-                long animationDuration = (long) Math.abs(Math.round(finalShutterSpeed) * 1000);
-                System.out.println("awoo animationDuration=" + animationDuration);
-                animation.setDuration(animationDuration);
-                animation.setInterpolator(new LinearInterpolator());
-                animation.start();
-                tv_big_chronometer.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.VISIBLE);
-                asynctask = new ChronometerAsyncTask(this).execute(finalShutterSpeed % 60);
+                if (asyncTask== null) {
+                    button.setText("Stop");
+                    //multiply by 100 for the animation to be smoothie
+                    progressBar.setMax(Math.round(finalShutterSpeed) * 100);
+                    progressBar.setProgress(0);
+                    ObjectAnimator animation = ObjectAnimator.ofInt(progressBar, "progress", 0,
+                            progressBar.getMax());
+                    long animationDuration = (long) Math.abs(Math.round(finalShutterSpeed) * 1000);
+                    System.out.println("awoo animationDuration=" + animationDuration);
+                    animation.setDuration(animationDuration);
+                    animation.setInterpolator(new LinearInterpolator());
+                    animation.start();
+                    tv_big_chronometer.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.VISIBLE);
+                    asyncTask = (ChronometerAsyncTask) new ChronometerAsyncTask(this).execute(
+                            finalShutterSpeed % 60);
+                }
                 break;
             case "Stop":
+                asyncTask.cancel(false);
                 button.setText("Start");
                 progressBar.setMax((int) finalShutterSpeed);
                 progressBar.setProgress(0);
                 tv_big_chronometer.setVisibility(View.INVISIBLE);
                 progressBar.setVisibility(View.INVISIBLE);
-                asynctask.cancel(false);
                 break;
 
             default:
