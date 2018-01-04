@@ -2,10 +2,20 @@ package com.awoisoak.exposure.presentation;
 
 
 import android.animation.ObjectAnimator;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
@@ -20,7 +30,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 //TODO save button status with tags instead of texts (otherwise it won't work with other language)
-//TODO add property activity with the explanation of EV and all the formulas?
+//TODO Add Icons for small screens with good enough resolution phones like Moto G
 
 /**
  * Only activity in the app to display controls and different values to the user
@@ -34,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private static final float MAX_SPEED_ALLOWED_GAP = 0.00002125f;
     private static final float MAX_EXPOSURE_VALUE = 7 * 24 * 60 * 60;
     private static final float MIN_CHRONOMETER_SPEED = 3.8f;
+    private static final String THEME_ID = "theme_id";
 
     @BindView(R.id.tv_aperture)
     TextView tvAperture;
@@ -78,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     @BindView(R.id.tv_big_chronometer)
     TextView tv_big_chronometer;
 
+    ActionBar actionbar;
 
     String[] apertureValues;
     String[] speedValues;
@@ -85,10 +97,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     String[] StopsValues;
     private float finalShutterSpeed;
     private Snackbar snackbar;
+    private int themeToApply;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            setTheme(savedInstanceState.getInt(THEME_ID, R.style.DarkExposureTheme));
+        }
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initializeValues();
@@ -103,6 +119,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     private void initializeViews() {
+        actionbar = getSupportActionBar();
+        actionbar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#00BCD4")));
         seekBarAperture.setOnSeekBarChangeListener(this);
         seekBarApertureND.setOnSeekBarChangeListener(this);
         seekBarSpeed.setOnSeekBarChangeListener(this);
@@ -121,6 +139,36 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         progressBar.setVisibility(View.INVISIBLE);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.night_mode_button) {
+            TypedValue outValue = new TypedValue();
+            getTheme().resolveAttribute(R.attr.themeName, outValue, true);
+            if ("AppTheme".equals(outValue.string)) {
+                themeToApply = R.style.DarkExposureTheme;
+            } else if ("DarkExposureTheme".equals(outValue.string)) {
+                themeToApply = R.style.AppTheme;
+            }
+            recreate();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt(THEME_ID, themeToApply);
+        super.onSaveInstanceState(outState);
+    }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -320,7 +368,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      * setup
      * a random max value (long enough for any 'normal' use)
      *
-     * Besides that, we will hide the Chronometer button when the final speed is lower than {MIN_CHRONOMETER_SPEED} as
+     * Besides that, we will hide the Chronometer button when the final speed is lower than
+     * {MIN_CHRONOMETER_SPEED} as
      * it's kind of useless
      */
     private void checkThresholds(float uSpeed) {
@@ -407,6 +456,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     /**
      * Method to access to the finalShutterSpeed from the AsyncTask
+     *
      * @param rounded if true, the value will be automatically rounded
      */
     public float getFinalShutterSpeed(boolean rounded) {
@@ -420,8 +470,19 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
      */
     private void displaySnackbar(int messageId) {
         if (snackbar == null || !snackbar.isShown()) {
-            snackbar = Snackbar.make(findViewById(R.id.constraint_layout),
-                    messageId, Snackbar.LENGTH_INDEFINITE);
+
+            /**
+             Hack to change the text color in a support snackbar
+             https://stackoverflow.com/questions/31061474/how-to-set-support-library-snackbar-text
+             -color-to-something-other-than-android
+             **/
+            String snackText = getResources().getString(messageId);
+            SpannableStringBuilder ssb = new SpannableStringBuilder()
+                    .append(snackText);
+            ssb.setSpan(new ForegroundColorSpan(Color.WHITE), 0, snackText.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            snackbar = Snackbar.make(findViewById(R.id.constraint_layout), ssb,
+                    Snackbar.LENGTH_INDEFINITE);
             snackbar.show();
         }
     }
@@ -434,6 +495,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             snackbar.dismiss();
         }
     }
+
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
