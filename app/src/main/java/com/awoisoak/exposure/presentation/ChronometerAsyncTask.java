@@ -93,6 +93,11 @@ public class ChronometerAsyncTask extends AsyncTask {
 
                 @Override
                 public void onTick(long l) {
+                    if (isCancelled()){
+                        countdown.cancel();
+                        onFinish();
+                        return;
+                    }
                     progress = progress + 1;
                     timeLeft = timeLeft - 1;
                     params[0] = progress;
@@ -139,6 +144,7 @@ public class ChronometerAsyncTask extends AsyncTask {
             tv_big_chronometer.get().setVisibility(enable ? View.INVISIBLE : View.VISIBLE);
             tv_final_shutter_speed.get().setVisibility(enable ? View.VISIBLE : View.INVISIBLE);
 
+            mActivity.get().invalidateOptionsMenu();
         }
     }
 

@@ -4,6 +4,7 @@ package com.awoisoak.exposure.presentation;
 import android.animation.ObjectAnimator;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private float finalShutterSpeed;
     private Snackbar snackbar;
     private int themeToApply;
+    private AsyncTask asynctask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,8 +143,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        if (asynctask == null || asynctask.isCancelled()) {
+            getMenuInflater().inflate(R.menu.main, menu);
+
+        } else {
+            for (int i = 0; i < menu.size(); i++) {
+                menu.getItem(i).setVisible(false);
+            }
+        }
         return true;
     }
 
@@ -437,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 animation.start();
                 tv_big_chronometer.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.VISIBLE);
-                new ChronometerAsyncTask(this).execute(finalShutterSpeed % 60);
+                asynctask = new ChronometerAsyncTask(this).execute(finalShutterSpeed % 60);
                 break;
             case "Stop":
                 button.setText("Start");
@@ -445,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 progressBar.setProgress(0);
                 tv_big_chronometer.setVisibility(View.INVISIBLE);
                 progressBar.setVisibility(View.INVISIBLE);
-                new ChronometerAsyncTask(this).cancel(false);
+                asynctask.cancel(false);
                 break;
 
             default:
