@@ -4,6 +4,7 @@ Camera Exposure Calculator app allows you calculate the perfect exposure for you
 You just have to input your current exposure (Aperture, shutter speed and ISO) and it will automatically calculate the exposure based on your new settings.
 It supports to add an ND filter until 30 stop.
 The apps displays the current EV and integrates a chronometer to help you calculate a perfect exposure.
+A night mode feature is implemented when using it at dark.
 
 No design pattern or architecture design has been used as it's a pretty simple app with just one activity.
  
@@ -32,5 +33,7 @@ Details about the [calculation after an ND filter](http://www.vassilistangoulis.
       - Tnd is the final exposure time
       
       
-![alt tag](http://awoisoak.com/public/android/exposure1.png)
-![alt tag](http://awoisoak.com/public/android/exposure2.png)
+![alt tag](http://awoisoak.com/public/android/exposure_1.png)
+![alt tag](http://awoisoak.com/public/android/exposure_2.png)
+![alt tag](http://awoisoak.com/public/android/exposure_3.png)
+![alt tag](http://awoisoak.com/public/android/exposure_4.png)
