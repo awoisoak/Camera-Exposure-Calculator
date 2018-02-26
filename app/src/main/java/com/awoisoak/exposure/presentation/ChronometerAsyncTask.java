@@ -75,7 +75,7 @@ public class ChronometerAsyncTask extends AsyncTask {
             button.get().setText("Start");
             progressBar.get().setProgress(0);
             setViewsEnabled(true);
-            mActivity.get().asyncTask =null;
+            mActivity.get().asyncTask = null;
 
         }
     }
@@ -88,14 +88,14 @@ public class ChronometerAsyncTask extends AsyncTask {
             setViewsEnabled(false);
             final float uSpeed = mActivity.get().getFinalShutterSpeed(true);
             final Object[] params = new Object[2];
-            countdown = new CountDownTimer((long) (uSpeed * 1000)+1000, 1000) {
+            countdown = new CountDownTimer((long) (uSpeed * 1000) + 1000, 1000) {
                 int progress = -1;
                 float timeLeft = uSpeed + 1;
 
 
                 @Override
                 public void onTick(long l) {
-                    if (isCancelled()){
+                    if (isCancelled()) {
                         countdown.cancel();
                         onFinish();
                         return;
@@ -111,12 +111,14 @@ public class ChronometerAsyncTask extends AsyncTask {
                 public void onFinish() {
                     countdownFinished = true;
                     //When we call to onPostExecute manually, it has to run in the UI thread
-                    mActivity.get().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            onPostExecute(new Object());
-                        }
-                    });
+                    if (mActivity != null) {
+                        mActivity.get().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                onPostExecute(new Object());
+                            }
+                        });
+                    }
                 }
             };
         }
@@ -161,7 +163,7 @@ public class ChronometerAsyncTask extends AsyncTask {
         }
     }
 
-    public boolean isCountdownFinished(){
+    public boolean isCountdownFinished() {
         return countdownFinished;
     }
 }
