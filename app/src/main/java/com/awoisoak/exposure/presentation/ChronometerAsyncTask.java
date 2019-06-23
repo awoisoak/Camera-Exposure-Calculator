@@ -111,7 +111,7 @@ public class ChronometerAsyncTask extends AsyncTask {
                 public void onFinish() {
                     countdownFinished = true;
                     //When we call to onPostExecute manually, it has to run in the UI thread
-                    if (mActivity != null) {
+                    if (mActivity != null && mActivity.get() != null) {
                         mActivity.get().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
