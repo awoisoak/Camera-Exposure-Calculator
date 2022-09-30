@@ -23,9 +23,13 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: test
-      - name: Setup and execute Gradle 'test' task
+      - name: Assemble
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: assemble    
-
+          arguments: assemble  
+      - name: Upload artifacts
+        uses: actions/upload-artifact@3
+        with:
+          name: build_outputs
+          path: app/build/outputs
     
