@@ -28,7 +28,7 @@ jobs:
         with:
           arguments: assemble  
       - name: Upload artifacts
-        uses: actions/upload-artifact@3
+        uses: actions/upload-artifact@v3
         with:
           name: build_outputs
           path: app/build/outputs
