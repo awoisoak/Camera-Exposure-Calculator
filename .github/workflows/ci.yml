@@ -19,14 +19,18 @@ jobs:
       #     name: index.html
       #     path: app/build/reports/tests/testDebugUnitTest/index.html
 
-      - name: Setup and execute Gradle 'test' task
+      - name: Setup and execute Gradle 'build --scan' task
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: test
-      - name: Assemble
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: assemble  
+          arguments: build --scan
+      # - name: Setup and execute Gradle 'test' task
+      #   uses: gradle/gradle-build-action@v2
+      #   with:
+      #     arguments: test
+      # - name: Assemble
+      #   uses: gradle/gradle-build-action@v2
+      #   with:
+      #     arguments: assemble  
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
