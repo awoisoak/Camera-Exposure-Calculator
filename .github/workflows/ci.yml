@@ -11,7 +11,7 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Setup and execute Gradle 'build --scan' task
+      - name: Setup and execute Gradle 'bundle --scan' task
         uses: gradle/gradle-build-action@v2
         with:
           arguments: bundle --scan
