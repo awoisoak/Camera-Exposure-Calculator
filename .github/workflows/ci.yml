@@ -14,7 +14,7 @@ jobs:
       - name: Setup and execute Gradle 'build --scan' task
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build --scan
+          arguments: bundle --scan
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
