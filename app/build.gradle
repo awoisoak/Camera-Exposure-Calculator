@@ -1,4 +1,10 @@
-apply plugin: 'com.android.application'
+import com.github.triplet.gradle.androidpublisher.ReleaseStatus
+import com.github.triplet.gradle.androidpublisher.ResolutionStrategy
+
+plugins {
+    id 'com.android.application'
+    id 'com.github.triplet.play' version "3.7.0"
+}
 
 android {
     compileSdkVersion 31
@@ -31,4 +37,13 @@ dependencies {
     implementation 'com.jakewharton:butterknife:10.2.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
     implementation 'com.google.android.material:material:1.0.0'
+}
+
+play {
+    enabled.set(System.getenv("CI") == "true")
+    track.set("internal")
+    defaultToAppBundles.set(true)
+    userFraction.set(0.1d)
+    resolutionStrategy.set(ResolutionStrategy.FAIL)
+    releaseStatus.set(ReleaseStatus.IN_PROGRESS)
 }

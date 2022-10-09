@@ -1,0 +1,40 @@
+name: Google Play deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "SHA commit"
+        required: true
+      tag:
+        description: 'Release tag'
+        required: true
+      track:
+        description: 'Track in Google Play'
+        required: true
+        default: 'internal'  
+  
+
+jobs:
+  GP-deployment:
+    runs-on: ubuntu-latest
+    env: 
+      COMMIT: ${{ github.event.inputs.commit }}
+      TAG: ${{ github.event.inputs.tag }}
+      TRACK: ${{ github.event.inputs.track }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download artifact
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GH_TOKEN}}
+          workflow: ci.yml
+          workflow_conclusion: success
+          commit: ${{ github.event.inputs.commit }}
+          name: build_outputs
+      - name: Publish Bundle
+        env:
+          ANDROID_PUBLISHER_CREDENTIALS: ${{ secrets.ANDROID_PUBLISHER_CREDENTIALS }}
+        run: ./gradlew publishProductionReleaseBundle --track="${{ env.TRACK }}" --artifact-dir bundle/productionRelease/app-production-release.aab
