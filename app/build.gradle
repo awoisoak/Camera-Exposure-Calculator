@@ -24,10 +24,10 @@ android {
         release {
             // When signing locally it will obtain the data from keystore.properties file
             // while in Github actions it will use env variables and the generated keystore/upload-key-camera-exposure.jks
-            keyAlias keystoreProperties['keyAlias']?: environment["ALIAS"] ?: error("Error!")
-            keyPassword keystoreProperties['keyPassword']?: environment["KEY_PASSWORD"] ?: error("Error!")
+            keyAlias keystoreProperties['keyAlias']?: System.getenv('ALIAS') ?: error("Error!")
+            keyPassword keystoreProperties['keyPassword']?: System.getenv('KEY_PASSWORD') ?: error("Error!")
             storeFile file(keystoreProperties['storeFile'])?: file("keystore/upload-key-camera-exposure.jks") ?: error("Error!")
-            storePassword keystoreProperties['storePassword']?: environment["ALIAS"] ?: error("Error!")
+            storePassword keystoreProperties['storePassword']?: System.getenv('KEY_STORE_PASSWORD') ?: error("Error!")
         }
     }
     compileSdkVersion 31
