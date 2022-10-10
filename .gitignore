@@ -24,3 +24,5 @@ build/
 *~
 *.swp
 *.orig
+
+keystore.properties
