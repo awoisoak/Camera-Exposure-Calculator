@@ -22,7 +22,16 @@ jobs:
       COMMIT: ${{ github.event.inputs.commit }}
       TAG: ${{ github.event.inputs.tag }}
       TRACK: ${{ github.event.inputs.track }}
+      SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      SIGNING_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+      ENCODED_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
     steps:
+      - name: Decode Keystore
+        run: |
+            TMP_KEYSTORE_FILE_PATH="${RUNNER_TEMP}"/keystore
+            mkdir "${TMP_KEYSTORE_FILE_PATH}"
+            echo $ENCODED_SIGNING_KEY | base64 -di > "${TMP_KEYSTORE_FILE_PATH}"/upload-key-camera-exposure.jks
       - uses: actions/checkout@v2
       - name: Download artifact
         env: 
@@ -34,6 +43,25 @@ jobs:
           workflow_conclusion: success
           commit: ${{ github.event.inputs.commit }}
           name: build_outputs
+      - uses: r0adkll/sign-android-release@v1
+        name: Sign Bundle
+        # ID used to access action output
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          # override default build-tools version (29.0.3) -- optional
+          BUILD_TOOLS_VERSION: "30.0.2"
+
+      # Example use of `signedReleaseFile` output -- not needed
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Signed app bundle
+          path: ${{steps.sign_app.outputs.signedReleaseFile}}
       - name: Publish Bundle
         env:
           ANDROID_PUBLISHER_CREDENTIALS: ${{ secrets.ANDROID_PUBLISHER_CREDENTIALS }}
