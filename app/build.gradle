@@ -20,10 +20,12 @@ keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 android {
     signingConfigs {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+            // When signing locally it will obtain the data from keystore.properties file
+            // while in Github actions it will use env variables and the generated keystore/upload-key-camera-exposure.jks
+            keyAlias keystoreProperties['keyAlias']?: environment["ALIAS"] ?: error("Error!")
+            keyPassword keystoreProperties['keyPassword']?: environment["KEY_PASSWORD"] ?: error("Error!")
+            storeFile file(keystoreProperties['storeFile'])?: file("keystore/upload-key-camera-exposure.jks") ?: error("Error!")
+            storePassword keystoreProperties['storePassword']?: environment["ALIAS"] ?: error("Error!")
         }
     }
     compileSdkVersion 31

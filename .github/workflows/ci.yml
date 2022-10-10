@@ -6,11 +6,26 @@ jobs:
   CI:
     name: Run CI tasks
     runs-on: ubuntu-latest
+    env:
+      SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      SIGNING_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
     steps:
+      - name: Decode Keystore
+        id: decode_keystore
+        uses: timheuer/base64-to-file@v1
+        with:
+          fileName: 'keystore/upload-key-camera-exposure.jks'
+          encodedString: ${{ secrets.KEYSTORE }}  
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
           java-version: 11
+      # TODO use gradle wrapper instead    
+      # - name: Make gradlew executable
+      #   run: chmod +x ./gradlew
+      # - name: build prod
+      #   run: ./gradlew app:bundleRelease      
       - name: Setup and execute Gradle 'bundle --scan' task
         uses: gradle/gradle-build-action@v2
         with:
