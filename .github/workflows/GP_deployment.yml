@@ -66,3 +66,14 @@ jobs:
         env:
           ANDROID_PUBLISHER_CREDENTIALS: ${{ secrets.ANDROID_PUBLISHER_CREDENTIALS }}
         run: ./gradlew publishBundle --track="${{ env.TRACK }}" --artifact-dir bundle/release/app-release.aab
+      - name: Create Github release
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          target_commitish: ${{ env.COMMIT }}
+          tag_name: ${{ env.TAG }}
+          name: Release ${{ env.TAG }}
+          body_path: New release ${{ env.TAG }}. See commits/PRs to identify the changes.
+          files: bundle/release/app-release.aab
