@@ -7,16 +7,12 @@ jobs:
     name: Run CI tasks
     runs-on: ubuntu-latest
     env:
+      #These env variables are used by the signing config in app/build.gradle
       SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
       SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       SIGNING_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
       ENCODED_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
     steps:
-      - name: Decode Keystore
-        run: |
-            TMP_KEYSTORE_FILE_PATH="${RUNNER_TEMP}"/keystore
-            mkdir "${TMP_KEYSTORE_FILE_PATH}"
-            echo $ENCODED_STRING | base64 -di > "${TMP_KEYSTORE_FILE_PATH}"/upload-key-camera-exposure.jks
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
