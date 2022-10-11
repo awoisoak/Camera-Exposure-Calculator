@@ -1,5 +1,6 @@
 name: Google Play deployment
 
+
 on:
   workflow_dispatch:
     inputs:
@@ -27,11 +28,6 @@ jobs:
       SIGNING_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
       ENCODED_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
     steps:
-      - name: Decode Keystore
-        run: |
-            TMP_KEYSTORE_FILE_PATH="${RUNNER_TEMP}"/keystore
-            mkdir "${TMP_KEYSTORE_FILE_PATH}"
-            echo $ENCODED_SIGNING_KEY | base64 -di > "${TMP_KEYSTORE_FILE_PATH}"/upload-key-camera-exposure.jks
       - uses: actions/checkout@v2
       - name: Download artifact
         env: 
@@ -43,6 +39,11 @@ jobs:
           workflow_conclusion: success
           commit: ${{ github.event.inputs.commit }}
           name: build_outputs
+      - name: Decode Keystore
+        run: |
+            TMP_KEYSTORE_FILE_PATH="${RUNNER_TEMP}"/keystore
+            mkdir "${TMP_KEYSTORE_FILE_PATH}"
+            echo $ENCODED_SIGNING_KEY | base64 -di > "${TMP_KEYSTORE_FILE_PATH}"/upload-key-camera-exposure.jks 
       - uses: r0adkll/sign-android-release@v1
         name: Sign Bundle
         # ID used to access action output
