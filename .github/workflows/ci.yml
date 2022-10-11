@@ -20,16 +20,12 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
-          java-version: 11
-      # TODO use gradle wrapper instead    
-      # - name: Make gradlew executable
-      #   run: chmod +x ./gradlew
-      # - name: build prod
-      #   run: ./gradlew app:bundleRelease      
-      - name: Setup and execute Gradle 'bundle --scan' task
+          java-version: 11  
+      - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
-        with:
-          arguments: bundle --scan
+      - name: Run 'bundle --scan' with Gradle wrapper
+        id: gradle
+        run: ./gradlew bundle --scan
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
