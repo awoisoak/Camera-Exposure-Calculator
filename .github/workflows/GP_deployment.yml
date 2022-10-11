@@ -55,12 +55,15 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: "30.0.2"
-
       - uses: actions/upload-artifact@v2
         with:
           name: Signed app bundle
           path: ${{steps.sign_app.outputs.signedReleaseFile}}
-      - name: Publish Bundle
+      - name: Publish app listing to Google Play
+        env: 
+          ANDROID_PUBLISHER_CREDENTIALS: ${{ secrets.ANDROID_PUBLISHER_CREDENTIALS }}
+        run: ./gradlew publishProductionReleaseListing    
+      - name: Publish Bundle to Google Play
         env:
           ANDROID_PUBLISHER_CREDENTIALS: ${{ secrets.ANDROID_PUBLISHER_CREDENTIALS }}
         run: ./gradlew publishBundle --track="${{ env.TRACK }}" --artifact-dir bundle/release/app-release.aab
