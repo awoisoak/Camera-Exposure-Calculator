@@ -73,5 +73,5 @@ jobs:
           target_commitish: ${{ env.COMMIT }}
           tag_name: ${{ env.TAG }}
           name: Release ${{ env.TAG }}
-          body_path: New release ${{ env.TAG }}. See commits/PRs to identify the changes.
+          body_path: app/src/main/play/release-notes/en-US/default.txt
           files: bundle/release/app-release.aab
