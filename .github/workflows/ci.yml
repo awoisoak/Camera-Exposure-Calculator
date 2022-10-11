@@ -6,6 +6,12 @@ jobs:
   CI:
     name: Run CI tasks
     runs-on: ubuntu-latest
+    env:
+      #These env variables are used by the signing config in app/build.gradle
+      SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      SIGNING_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+      ENCODED_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
