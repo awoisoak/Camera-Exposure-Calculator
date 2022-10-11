@@ -21,11 +21,10 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11  
-      - name: Setup Gradle
+      - name: Setup Gradle and run 'gradle bundle --scan'
         uses: gradle/gradle-build-action@v2
-      - name: Run 'bundle --scan' with Gradle wrapper
-        id: gradle
-        run: ./gradlew bundle --scan
+        with:
+          arguments: bundle --scan
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
